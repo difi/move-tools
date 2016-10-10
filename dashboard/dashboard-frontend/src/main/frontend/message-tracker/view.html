@@ -1,0 +1,56 @@
+<div class="row">
+    <ol class="breadcrumb">
+        <li><a href="/">Message tracker</a></li>
+        <li class="active">{{header.conversation_id}}</li>
+    </ol>
+    <h1>Conversation: {{header.conversation_id}}</h1>
+</div>
+<div class="row">
+    <div class="col-md-8">
+        <div class="panel panel-default">
+        <div class="panel-heading">Messages</div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>source</th>
+                    <th>message</th>
+                    <th>message-type</th>
+                    <th>status</th>
+                    <th>timestamp</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="log in logs">
+                    <td>{{log.orgnumber}}</td>
+                    <td>{{log.message}}</td>
+                    <td>{{log.messagetype}}</td>
+                    <td>{{log.level}}</td>
+                    <td>{{log.timestamp}}</td>
+                </tr>
+            </tbody>
+        </table>
+        </div>
+    </div>
+    <div class="col-md-4" style="position :relative">
+        <div class="panel panel-default" data-spy="affix" >
+            <div class="panel-heading">Information</div>
+            <div class="panel-body">
+                <dl>
+                    <dt>conversation_id</dt>
+                    <dd>{{header.conversation_id}}</dd>
+                    <dt>journalpost_id</dt>
+                    <dd>{{header.journalpost_id}}</dd>
+                    <dt>receiver_org_number</dt>
+                    <dd>{{header.receiver_org_number}}</dd>
+                    <dt>sender_org_number</dt>
+                    <dd>{{header.sender_org_number}}</dd>
+                </dl>
+
+                <ul class="pager">
+                    <li ng-click="follow('prev')"><a href="#">Previous</a></li>
+                    <li ng-click="follow('next')"><a href="#">Next</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

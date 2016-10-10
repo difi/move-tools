@@ -1,0 +1,42 @@
+<div class="row">
+    <ol class="breadcrumb">
+        <li class="active">Message tracker</li>
+    </ol>
+    <h1>Message tracker</h1>
+    <div class="col-md-12">
+        <form name="search">
+            <div class="form-group">
+                <label for="orgnumber">Org. number</label>
+                <input class="form-control" type="text" name="orgnumber" id="orgnumber" ng-model="form.orgNumber" required="" ng-change="find(form)"/>
+            </div>
+            <div class="form-group">
+                <label for="conversation-id">Conversation ID</label>
+                <input class="form-control" type="text" name="conversationId" id="conversation-id" ng-model="form.c" ng-change="find(form)"/>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Conversation ID</th>
+                    <th>Receiving org</th>
+                    <th>Sender org</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="conversation in conversations">
+                    <td><a ng-href="/track/{{form.orgNumber}}/{{conversation.conversation_id}}">{{conversation.conversation_id}}</a></td>
+                    <td>{{conversation.receiver_org_number}}</td>
+                    <td>{{conversation.sender_org_number}}</td>
+                </tr>
+            </tbody>
+        </table>
+        <ul class="pager">
+            <li ng-click="follow('prev')"><a href="#">Previous</a></li>
+            <li ng-click="follow('next')"><a href="#">Next</a></li>
+        </ul>
+    </div>
+</div>
