@@ -7,22 +7,9 @@ ENV APP_DIR=/var/lib/difi
 
 
 RUN apk add --update \
-	    ca-certificates \
         curl \
         tini \
-	    openssl  && \
-	    update-ca-certificates && \
-	    rm -rf /var/cache/apk/*
-
-#
-# Install Java unlimited security policy
-#
-
-RUN cd /tmp/ && \
-    curl -LO "http://download.oracle.com/otn-pub/java/jce/8/jce_policy-8.zip" -H 'Cookie: oraclelicense=accept-securebackup-cookie' && \
-    unzip jce_policy-8.zip && \
-    rm jce_policy-8.zip && \
-    yes |cp -v /tmp/UnlimitedJCEPolicyJDK8/*.jar ${JAVA_HOME}/lib/security/
+	rm -rf /var/cache/apk/*
 
 #
 # Start the application
@@ -32,7 +19,7 @@ WORKDIR ${APP_DIR}
 
 EXPOSE 8080
 
-ENTRYPOINT ["/sbin/tini", "--", "./run.sh"]
+ENTRYPOINT ["/sbin/tini", "-g", "--", "./run.sh"]
 
 #
 # Install application

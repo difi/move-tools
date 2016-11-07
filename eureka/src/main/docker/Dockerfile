@@ -14,21 +14,12 @@ EXPOSE 8761
 #
 
 ENV APP_DIR=/var/lib/difi \
-    APP_PREFIX=eureka \
     APP_JAVA_PARAMS="-Xmx1g"
 
 RUN apk add --update \
-	    ca-certificates \
         curl \
-	    openssl  && \
-	    update-ca-certificates && \
-	    rm -rf /var/cache/apk/*
-
-RUN cd /tmp/ && \
-    curl -LO "http://download.oracle.com/otn-pub/java/jce/8/jce_policy-8.zip" -H 'Cookie: oraclelicense=accept-securebackup-cookie' && \
-    unzip jce_policy-8.zip && \
-    rm jce_policy-8.zip && \
-    yes |cp -v /tmp/UnlimitedJCEPolicyJDK8/*.jar ${JAVA_HOME}/lib/security/
+        tini \
+	rm -rf /var/cache/apk/*
 
 #
 # Start the application
@@ -36,6 +27,7 @@ RUN cd /tmp/ && \
 
 WORKDIR ${APP_DIR}
 
-CMD APP_NAME=$(ls ${APP_PREFIX}*.jar) && java ${APP_JAVA_PARAMS} -jar ${APP_NAME}
 
-ADD ${APP_PREFIX}*.jar ${APP_DIR}/
+ENTRYPOINT ["/sbin/tini", "-g", "--", "java", "-jar", "app.jar"]
+
+ADD *.jar ${APP_DIR}/app.jar
