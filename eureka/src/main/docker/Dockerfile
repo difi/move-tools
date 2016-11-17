@@ -31,3 +31,4 @@ WORKDIR ${APP_DIR}
 ENTRYPOINT ["/sbin/tini", "-g", "--", "java", "-jar", "app.jar"]
 
 ADD *.jar ${APP_DIR}/app.jar
+HEALTHCHECK CMD curl -s --fail http://localhost:8761/manage/health > /dev/null || exit 1
