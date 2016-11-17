@@ -9,7 +9,7 @@ module.exports = webpackMerge(commonConfig, {
     output: {
         path: './target/classes/static/',
         filename: 'app.bundle.js',
-        publicPath: '/'
+        publicPath: '/sporing/'
 
     },  
     plugins: [

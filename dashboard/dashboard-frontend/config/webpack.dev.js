@@ -5,16 +5,13 @@ module.exports = webpackMerge(commonConfig, {
     output: {
         path: './target/test',
         filename: 'app.bundle.js',
-        publicPath: '/'
+        publicPath: '/sporing/'
 
     },
     devServer: {
         headers: {"Access-Control-Allow-Origin": "*"},
         historyApiFallback: {
             index: '/index.html',
-            rewrites: [
-                {from: /\/soccer/, to: '/soccer.html'}
-            ]
         }
     }
 });

@@ -8,7 +8,7 @@ ENV APP_DIR=/var/lib/difi
 
 RUN apk add --update \
         curl \
-        tini \
+        tini && \
 	rm -rf /var/cache/apk/*
 
 #
