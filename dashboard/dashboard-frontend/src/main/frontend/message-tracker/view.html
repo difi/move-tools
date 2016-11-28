@@ -1,34 +1,41 @@
 <div class="row">
     <ol class="breadcrumb">
-        <li><a href="/">Message tracker</a></li>
-        <li class="active">{{header.conversation_id}}</li>
+        <li class="active">Message tracker</li>
     </ol>
-    <h1>Conversation: {{header.conversation_id}}</h1>
+    <h1>Message tracker</h1>
+    <div class="col-md-12">
+        <form name="search">
+            <div class="form-group">
+                <label for="conversation-id">Conversation ID</label>
+                <input class="form-control" type="text" name="conversationId" id="conversation-id" ng-model="form.conversationId" ng-change="find(form)"/>
+            </div>
+        </form>
+    </div>
 </div>
 <div class="row">
     <div class="col-md-8">
         <div class="panel panel-default">
-        <div class="panel-heading">Messages</div>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>source</th>
-                    <th>message</th>
-                    <th>message-type</th>
-                    <th>status</th>
-                    <th>timestamp</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr ng-repeat="log in logs">
-                    <td>{{log.orgnumber}}</td>
-                    <td>{{log.message}}</td>
-                    <td>{{log.messagetype}}</td>
-                    <td>{{log.level}}</td>
-                    <td>{{log.timestamp}}</td>
-                </tr>
-            </tbody>
-        </table>
+            <div class="panel-heading">Messages</div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>source</th>
+                        <th>message</th>
+                        <th>message-type</th>
+                        <th>status</th>
+                        <th>timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="log in logs">
+                        <td>{{log.orgnumber}}</td>
+                        <td>{{log.message}}</td>
+                        <td>{{log.messagetype}}</td>
+                        <td>{{log.level}}</td>
+                        <td>{{log.timestamp}}</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
     <div class="col-md-4" style="position :relative">

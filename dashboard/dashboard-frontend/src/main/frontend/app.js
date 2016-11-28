@@ -12,14 +12,14 @@ angular.module('app', ['ngRoute', 'ngAnimate', "ngResource", "hateoas", "test"])
   function($routeProvider, $locationProvider, HateoasInterceptorProvider, HateoasInterfaceProvider) {
     $routeProvider  
       .when('/', {
-        template: require('./message-tracker/latest.html'),
-        controller: 'TestController'
+        template: require('./message-tracker/view.html'),
+        controller: 'Test2Controller'
       })
-      .when('/track/:orgNumber/:conversationId', {
+      .when('/track/:conversationId', {
         template: require('./message-tracker/view.html'),
         controller: 'Test2Controller'
       }).otherwise({redirectTo:'/'});
 
     HateoasInterceptorProvider.transformAllResponses();
-    $locationProvider.html5Mode(true);
+    $locationProvider.html5Mode({enable: true, requireBase: true});
 }]);

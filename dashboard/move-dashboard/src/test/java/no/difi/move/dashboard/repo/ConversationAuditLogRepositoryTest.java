@@ -1,7 +1,5 @@
 package no.difi.move.dashboard.repo;
 
-import no.difi.move.dashboard.config.DashboardConfiguration;
-import no.difi.move.dashboard.config.ElasticSearchConfiguration;
 import no.difi.move.dashboard.domain.ConversationAuditLog;
 import org.elasticsearch.index.query.MatchAllQueryBuilder;
 import org.elasticsearch.index.query.MatchQueryBuilder;
@@ -23,7 +21,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author nikko
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = {ElasticSearchConfiguration.class, DashboardConfiguration.class})
+@SpringBootTest
 public class ConversationAuditLogRepositoryTest {
 
     @Autowired
@@ -37,9 +35,9 @@ public class ConversationAuditLogRepositoryTest {
         SearchQuery query = new NativeSearchQueryBuilder()
                 .withFilter(
                         QueryBuilders.boolQuery()
-                        .must(new MatchQueryBuilder("conversation_id", "1ca54c1c-74ab-44b4-b3af-6f92a59b2f67"))
-                        .must(new MatchQueryBuilder("sender_org_number", myOrgNumber).operator(MatchQueryBuilder.Operator.OR))
-                        .must(new MatchQueryBuilder("receiver_org_number", myOrgNumber))
+                                .must(new MatchQueryBuilder("conversation_id", "1ca54c1c-74ab-44b4-b3af-6f92a59b2f67"))
+                                .must(new MatchQueryBuilder("sender_org_number", myOrgNumber).operator(MatchQueryBuilder.Operator.OR))
+                                .must(new MatchQueryBuilder("receiver_org_number", myOrgNumber))
                 )
                 .withSort(new FieldSortBuilder("timestamp").order(SortOrder.DESC))
                 .withQuery(new MatchAllQueryBuilder())
