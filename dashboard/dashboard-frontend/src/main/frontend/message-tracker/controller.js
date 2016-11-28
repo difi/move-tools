@@ -14,7 +14,7 @@ angular.module("test").controller("Test2Controller", [
             $scope.res = res;
             $scope.logs = res.content; 
             $scope.header = $scope.logs[0];
-            $location.url("/track/" + $scope.form.conversationId);
+            //$location.url("/track/" + $scope.form.conversationId);
         }; 
         
         $scope.find = function (search) {
