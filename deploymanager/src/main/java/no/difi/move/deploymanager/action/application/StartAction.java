@@ -53,7 +53,9 @@ public class StartAction extends AbstractApplicationAction {
         Properties metadata = directoryRepo.getMetadata();
 
         metadata.setProperty("version", application.getLatest().getVersion());
-        metadata.setProperty("sha1", application.getLatest().getSha1());
+        if (application.getLatest().getSha1() != null) {
+            metadata.setProperty("sha1", application.getLatest().getSha1());
+        }
         metadata.setProperty("repositoryId", application.getLatest().getRepositoryId());
 
         directoryRepo.setMetadata(metadata);
