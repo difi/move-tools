@@ -27,22 +27,21 @@ public class DownloadAction extends AbstractApplicationAction {
     }
 
     public Application apply(Application application) {
-        if (application.getCurrent().getVersion().equals(application.getLatest().getVersion())) {
-            return application;
-        }
         String root = getManager().getProperties().getProperty("root");
-        try {
-            File download = new File(root, "integrasjonspunkt.jar");
-            try (InputStream is = nexusRepo.getArtifact(application.getLatest().getVersion(), null).openStream();
-                    OutputStream os = new FileOutputStream(download)) {
-                IOUtils.copy(is, os);
-                application.setFile(download);
-                return application;
+        File download = new File(root, "integrasjonspunkt.jar");
+        if (!application.getCurrent().getVersion().equals(application.getLatest().getVersion())) {
+            try {
+                try (InputStream is = nexusRepo.getArtifact(application.getLatest().getVersion(), null).openStream();
+                        OutputStream os = new FileOutputStream(download)) {
+                    IOUtils.copy(is, os);
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(DownloadAction.class.getName()).log(Level.SEVERE, null, ex);
+                throw new DeployActionException("Error getting latest version", ex);
             }
-        } catch (IOException ex) {
-            Logger.getLogger(DownloadAction.class.getName()).log(Level.SEVERE, null, ex);
-            throw new DeployActionException("Error getting latest version", ex);
         }
+        application.setFile(download);
+        return application;
     }
 
 }

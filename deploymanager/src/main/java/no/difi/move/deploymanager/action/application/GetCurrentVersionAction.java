@@ -6,6 +6,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import no.difi.move.deploymanager.DeployManagerMain;
+import no.difi.move.deploymanager.action.DeployActionException;
 import no.difi.move.deploymanager.domain.Application;
 import no.difi.move.deploymanager.domain.ApplicationMetadata;
 import no.difi.move.deploymanager.domain.repo.DeployDirectoryRepo;
@@ -27,11 +28,13 @@ public class GetCurrentVersionAction extends AbstractApplicationAction {
     public Application apply(Application t) {
         try {
             Properties metadata = directoryRepo.getMetadata();
-            t.setCurrent(ApplicationMetadata.builder().version(metadata.getProperty("version")).build());
+            t.setCurrent(ApplicationMetadata.builder().version(metadata.getProperty("version", "none")).build());
         } catch (FileNotFoundException ex) {
             Logger.getLogger(GetCurrentVersionAction.class.getName()).log(Level.SEVERE, null, ex);
+            throw new DeployActionException("Failed to get current version", ex);
         } catch (IOException ex) {
             Logger.getLogger(GetCurrentVersionAction.class.getName()).log(Level.SEVERE, null, ex);
+            throw new DeployActionException("Failed to get current version", ex);
         }
         return t;
     }
