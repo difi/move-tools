@@ -27,6 +27,9 @@ public class DownloadAction extends AbstractApplicationAction {
     }
 
     public Application apply(Application application) {
+        if (application.getCurrent().getVersion().equals(application.getLatest().getVersion())) {
+            return application;
+        }
         String root = getManager().getProperties().getProperty("root");
         try {
             File download = new File(root, "integrasjonspunkt.jar");
