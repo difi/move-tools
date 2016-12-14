@@ -1,0 +1,86 @@
+package no.difi.move.deploymanager.action.application;
+
+import ch.qos.logback.core.encoder.ByteArrayUtil;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import no.difi.move.deploymanager.DeployManagerMain;
+import no.difi.move.deploymanager.action.DeployActionException;
+import no.difi.move.deploymanager.domain.Application;
+import no.difi.move.deploymanager.domain.repo.NexusRepo;
+import org.apache.commons.io.IOUtils;
+
+/**
+ *
+ * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
+ */
+public class ValidateAction extends AbstractApplicationAction {
+
+    private final NexusRepo nexusRepo;
+
+    public ValidateAction(DeployManagerMain manager) {
+        super(manager);
+        this.nexusRepo = new NexusRepo(manager);
+    }
+
+    @Override
+    public Application apply(Application application) {
+        try {
+            if (!verifyChecksum(application.getFile(), application.getLatest().getVersion(), ALGORITHM.SHA1)) {
+                throw new DeployActionException("SHA-1 verification failed");
+            }
+            if (!verifyChecksum(application.getFile(), application.getLatest().getVersion(), ALGORITHM.MD5)) {
+                throw new DeployActionException("MD-5 verification failed");
+            }
+            return application;
+        } catch (IOException | NoSuchAlgorithmException ex) {
+            Logger.getLogger(ValidateAction.class.getName()).log(Level.SEVERE, null, ex);
+            throw new DeployActionException("Error validating jar", ex);
+        }
+    }
+
+    private boolean verifyChecksum(File file, String version, ALGORITHM algorithm) throws IOException, NoSuchAlgorithmException {
+        byte[] buffer = new byte[8192];
+        MessageDigest instance = MessageDigest.getInstance(algorithm.getJava());
+
+        try (
+                InputStream is = nexusRepo.getArtifact(version, "jar." + algorithm.getSuffix()).openStream();
+                StringWriter os = new StringWriter();
+                DigestInputStream digestInputStream = new DigestInputStream(new FileInputStream(file), instance);) {
+
+            IOUtils.copy(is, os);
+
+            while (digestInputStream.read(buffer) != -1);
+
+            return MessageDigest.isEqual(instance.digest(), ByteArrayUtil.hexStringToByteArray(os.toString()));
+        }
+    }
+
+    private enum ALGORITHM {
+        MD5("MD5", "md5"),
+        SHA1("SHA-1", "sha1");
+
+        private final String java;
+        private final String suffix;
+
+        private ALGORITHM(String java, String suffix) {
+            this.java = java;
+            this.suffix = suffix;
+        }
+
+        public String getJava() {
+            return java;
+        }
+
+        public String getSuffix() {
+            return suffix;
+        }
+    }
+}

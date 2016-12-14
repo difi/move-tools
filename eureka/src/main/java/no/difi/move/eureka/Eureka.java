@@ -13,9 +13,9 @@ import org.springframework.cloud.config.server.EnableConfigServer;
 @EnableConfigServer
 @EnableEurekaServer
 public class Eureka {
-    
-	public static void main(String[] args) throws Exception {
-		SpringApplication.run(Eureka.class, args);
-	}
-    
+
+    public static void main(String[] args) throws Exception {
+        SpringApplication.run(Eureka.class, args);
+    }
+
 }

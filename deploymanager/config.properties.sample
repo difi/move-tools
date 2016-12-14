@@ -1,0 +1,6 @@
+root=/tmp/root
+nexus=https://beta-meldingsutveksling.difi.no
+repository=staging
+groupId=no.difi.meldingsutveksling
+artifactId=integrasjonspunkt
+shutdownURL=http://localhost:8080/shutdown
