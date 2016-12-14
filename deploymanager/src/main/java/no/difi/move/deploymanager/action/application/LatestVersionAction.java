@@ -4,9 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import no.difi.move.deploymanager.DeployManagerMain;
 import no.difi.move.deploymanager.action.DeployActionException;
 import no.difi.move.deploymanager.domain.Application;
@@ -17,6 +16,7 @@ import org.apache.commons.io.IOUtils;
  *
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
  */
+@Slf4j
 public class LatestVersionAction extends AbstractApplicationAction {
 
     public LatestVersionAction(DeployManagerMain manager) {
@@ -25,6 +25,7 @@ public class LatestVersionAction extends AbstractApplicationAction {
 
     @Override
     public Application apply(Application application) {
+        log.info("Getting latest version");
         try {
             URLConnection connection = new URL("http://nexusproxy.azurewebsites.net/latest?env=staging").openConnection();
             String result = IOUtils.toString(connection.getInputStream(), connection.getContentEncoding());
@@ -36,7 +37,7 @@ public class LatestVersionAction extends AbstractApplicationAction {
             );
             return application;
         } catch (IOException ex) {
-            Logger.getLogger(LatestVersionAction.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(null, ex);
             throw new DeployActionException("Error downloading file", ex);
         }
     }

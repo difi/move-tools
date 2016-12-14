@@ -8,9 +8,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import no.difi.move.deploymanager.command.AbstractCommand;
 import no.difi.move.deploymanager.config.CommandLineOptions;
 import no.difi.move.deploymanager.handler.AbstractHandler;
@@ -26,6 +25,7 @@ import org.apache.commons.cli.ParseException;
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
  */
 @Data
+@Slf4j
 public final class DeployManagerMain {
 
     private Properties properties = new Properties();
@@ -51,7 +51,7 @@ public final class DeployManagerMain {
             this.options = CommandLineOptions.options(commands);
             this.commandLine = parser.parse(this.options, args);
         } catch (ParseException ex) {
-            Logger.getLogger(DeployManagerMain.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(null, ex);
             System.exit(1);
         }
     }
@@ -60,7 +60,7 @@ public final class DeployManagerMain {
         try (InputStream is = new FileInputStream(new File("config.properties"))) {
             properties.load(is);
         } catch (IOException ex) {
-            Logger.getLogger(DeployManagerMain.class.getName()).log(Level.SEVERE, "Can't load properties", ex);
+            log.error("Can't load properties", ex);
         }
     }
 
@@ -72,7 +72,7 @@ public final class DeployManagerMain {
                             try {
                                 commands.add(c.newInstance());
                             } catch (InstantiationException | IllegalAccessException ex) {
-                                Logger.getLogger(DeployManagerMain.class.getName()).log(Level.SEVERE, null, ex);
+                                log.error(null, ex);
                             }
                         }
                 ).scan();
@@ -87,7 +87,7 @@ public final class DeployManagerMain {
         try {
             handler.newInstance().run(this);
         } catch (InstantiationException | IllegalAccessException ex) {
-            Logger.getLogger(DeployManagerMain.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(null, ex);
         }
     }
 

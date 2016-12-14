@@ -9,8 +9,7 @@ import java.io.StringWriter;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import lombok.extern.slf4j.Slf4j;
 import no.difi.move.deploymanager.DeployManagerMain;
 import no.difi.move.deploymanager.action.DeployActionException;
 import no.difi.move.deploymanager.domain.Application;
@@ -21,6 +20,7 @@ import org.apache.commons.io.IOUtils;
  *
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
  */
+@Slf4j
 public class ValidateAction extends AbstractApplicationAction {
 
     private final NexusRepo nexusRepo;
@@ -32,6 +32,7 @@ public class ValidateAction extends AbstractApplicationAction {
 
     @Override
     public Application apply(Application application) {
+        log.info("Validating jar.");
         try {
             if (!verifyChecksum(application.getFile(), application.getLatest().getVersion(), ALGORITHM.SHA1)) {
                 throw new DeployActionException("SHA-1 verification failed");
@@ -41,7 +42,7 @@ public class ValidateAction extends AbstractApplicationAction {
             }
             return application;
         } catch (IOException | NoSuchAlgorithmException ex) {
-            Logger.getLogger(ValidateAction.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(null, ex);
             throw new DeployActionException("Error validating jar", ex);
         }
     }

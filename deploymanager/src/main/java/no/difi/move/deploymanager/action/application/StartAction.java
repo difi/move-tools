@@ -3,8 +3,7 @@ package no.difi.move.deploymanager.action.application;
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import lombok.extern.slf4j.Slf4j;
 import no.difi.move.deploymanager.DeployManagerMain;
 import no.difi.move.deploymanager.action.DeployActionException;
 import no.difi.move.deploymanager.domain.Application;
@@ -15,6 +14,7 @@ import org.apache.commons.io.IOUtils;
  *
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
  */
+@Slf4j
 public class StartAction extends AbstractApplicationAction {
 
     private DeployDirectoryRepo directoryRepo;
@@ -26,6 +26,7 @@ public class StartAction extends AbstractApplicationAction {
 
     @Override
     public Application apply(Application application) {
+        log.info("Start application.");
         try {
             Process exec = Runtime.getRuntime().exec(
                     "java -jar integrasjonspunkt.jar --endpoints.shutdown.enabled=true",
@@ -38,7 +39,7 @@ public class StartAction extends AbstractApplicationAction {
 
             return application;
         } catch (IOException ex) {
-            Logger.getLogger(StartAction.class.getName()).log(Level.SEVERE, null, ex);
+            log.error(null, ex);
             throw new DeployActionException("Error starting application", ex);
         }
     }

@@ -1,7 +1,7 @@
 package no.difi.move.deploymanager.handler;
 
 import no.difi.move.deploymanager.DeployManagerMain;
-import no.difi.move.deploymanager.action.application.DownloadAction;
+import no.difi.move.deploymanager.action.application.PrepareApplicationAction;
 import no.difi.move.deploymanager.action.application.GetCurrentVersionAction;
 import no.difi.move.deploymanager.action.application.LatestVersionAction;
 import no.difi.move.deploymanager.action.application.ShutdownAction;
@@ -19,7 +19,7 @@ public class DefaultHandler implements AbstractHandler {
     public void run(DeployManagerMain manager) {
         new GetCurrentVersionAction(manager)
                 .andThen(new LatestVersionAction(manager))
-                .andThen(new DownloadAction(manager))
+                .andThen(new PrepareApplicationAction(manager))
                 .andThen(new ValidateAction(manager))
                 .andThen(new ShutdownAction(manager))
                 .andThen(new StartAction(manager))
