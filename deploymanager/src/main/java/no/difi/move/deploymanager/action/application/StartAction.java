@@ -26,6 +26,9 @@ public class StartAction extends AbstractApplicationAction {
 
     @Override
     public Application apply(Application application) {
+        if (application.getHealth() && application.getCurrent().getVersion().equals(application.getLatest().getVersion())) {
+            return application;
+        }
         log.info("Start application.");
         try {
             Process exec = Runtime.getRuntime().exec(

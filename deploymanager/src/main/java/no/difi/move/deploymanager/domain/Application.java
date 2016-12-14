@@ -11,6 +11,7 @@ import lombok.Data;
 public class Application {
 
     private File file;
+    private Boolean health;
     private ApplicationMetadata latest;
     private ApplicationMetadata current;
 

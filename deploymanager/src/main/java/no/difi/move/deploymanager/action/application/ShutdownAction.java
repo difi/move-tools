@@ -20,7 +20,7 @@ public class ShutdownAction extends AbstractApplicationAction {
 
     @Override
     public Application apply(Application application) {
-        if (!application.getCurrent().getVersion().equals(application.getLatest().getVersion())) {
+        if (!application.getHealth() || application.getCurrent().getVersion().equals(application.getLatest().getVersion())) {
             return application;
         }
         log.info("Shutdown running version.");
