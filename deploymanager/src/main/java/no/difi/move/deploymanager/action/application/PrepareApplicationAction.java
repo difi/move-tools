@@ -29,7 +29,7 @@ public class PrepareApplicationAction extends AbstractApplicationAction {
     public Application apply(Application application) {
         log.info("Prepare jar.");
         String root = getManager().getProperties().getProperty("root");
-        File download = new File(root, "integrasjonspunkt.jar");
+        File download = new File(root, "integrasjonspunkt-" + application.getLatest().getVersion() + ".jar");
         if (!application.getCurrent().getVersion().equals(application.getLatest().getVersion())) {
             log.info("Latest is different from current. Downloading newest version.");
             try {

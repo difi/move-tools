@@ -32,7 +32,7 @@ public class StartAction extends AbstractApplicationAction {
         log.info("Start application.");
         try {
             Process exec = Runtime.getRuntime().exec(
-                    "java -jar integrasjonspunkt.jar --endpoints.shutdown.enabled=true",
+                    "java -jar " + application.getFile().getAbsolutePath() + " --endpoints.shutdown.enabled=true",
                     null,
                     new File(getManager().getProperties().getProperty("root")));
 
