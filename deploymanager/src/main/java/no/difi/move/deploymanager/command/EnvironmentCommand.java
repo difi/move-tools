@@ -8,21 +8,24 @@ import org.apache.commons.cli.Options;
  *
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
  */
-public class QuietCommand implements AbstractCommand {
+public class EnvironmentCommand implements AbstractCommand {
+
+    public EnvironmentCommand() {
+    }
 
     @Override
     public void run(DeployManagerMain config) {
-        config.getProperties().setProperty("quiet", "true");
+        config.getProperties().setProperty("environment", config.getCommandLine().getOptionValue("e"));
     }
 
     @Override
     public boolean supports(CommandLine cmd) {
-        return cmd.hasOption("quiet");
+        return cmd.hasOption("e");
     }
 
     @Override
     public void commandLine(Options options) {
-        options.addOption("quiet", "Disconnect after running");
+        options.addOption("e", "environment", true, "Add environment variables to application");
     }
 
 }

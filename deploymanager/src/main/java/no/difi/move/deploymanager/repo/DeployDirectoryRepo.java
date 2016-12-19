@@ -1,4 +1,4 @@
-package no.difi.move.deploymanager.domain.repo;
+package no.difi.move.deploymanager.repo;
 
 import java.io.File;
 import java.io.FileInputStream;

@@ -1,4 +1,4 @@
-package no.difi.move.deploymanager.domain;
+package no.difi.move.deploymanager.domain.application;
 
 import java.io.File;
 import lombok.Data;

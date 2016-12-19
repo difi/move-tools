@@ -2,30 +2,27 @@ package no.difi.move.deploymanager.command;
 
 import no.difi.move.deploymanager.DeployManagerMain;
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 
 /**
  *
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
  */
-public class HelpCommand implements AbstractCommand {
+public class VerboseCommand implements AbstractCommand {
 
     @Override
     public void run(DeployManagerMain config) {
-        // automatically generate the help statement
-        HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("deploymanager", config.getOptions());
-        System.exit(1);
+        config.getProperties().setProperty("verbose", "true");
     }
 
     @Override
     public boolean supports(CommandLine cmd) {
-        return cmd.hasOption("h");
+        return cmd.hasOption("v");
     }
 
     @Override
     public void commandLine(Options options) {
-        options.addOption("h", "help", false, "Display help");
+        options.addOption("v", "verbose", false, "Follow application log.");
     }
+
 }

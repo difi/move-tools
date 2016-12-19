@@ -12,8 +12,8 @@ import java.security.NoSuchAlgorithmException;
 import lombok.extern.slf4j.Slf4j;
 import no.difi.move.deploymanager.DeployManagerMain;
 import no.difi.move.deploymanager.action.DeployActionException;
-import no.difi.move.deploymanager.domain.Application;
-import no.difi.move.deploymanager.domain.repo.NexusRepo;
+import no.difi.move.deploymanager.domain.application.Application;
+import no.difi.move.deploymanager.repo.NexusRepo;
 import org.apache.commons.io.IOUtils;
 
 /**

@@ -3,7 +3,7 @@ package no.difi.move.deploymanager.action.application;
 import lombok.Data;
 import no.difi.move.deploymanager.DeployManagerMain;
 import no.difi.move.deploymanager.action.AbstractAction;
-import no.difi.move.deploymanager.domain.Application;
+import no.difi.move.deploymanager.domain.application.Application;
 
 /**
  *

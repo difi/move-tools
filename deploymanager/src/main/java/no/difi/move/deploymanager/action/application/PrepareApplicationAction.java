@@ -8,8 +8,9 @@ import java.io.OutputStream;
 import lombok.extern.slf4j.Slf4j;
 import no.difi.move.deploymanager.DeployManagerMain;
 import no.difi.move.deploymanager.action.DeployActionException;
-import no.difi.move.deploymanager.domain.Application;
-import no.difi.move.deploymanager.domain.repo.NexusRepo;
+import no.difi.move.deploymanager.domain.application.Application;
+import no.difi.move.deploymanager.domain.application.predicate.ApplicationVersionPredicate;
+import no.difi.move.deploymanager.repo.NexusRepo;
 import org.apache.commons.io.IOUtils;
 
 /**
@@ -30,7 +31,7 @@ public class PrepareApplicationAction extends AbstractApplicationAction {
         log.info("Prepare jar.");
         String root = getManager().getProperties().getProperty("root");
         File download = new File(root, "integrasjonspunkt-" + application.getLatest().getVersion() + ".jar");
-        if (!application.getCurrent().getVersion().equals(application.getLatest().getVersion())) {
+        if (!(download.exists() && new ApplicationVersionPredicate().test(application))) {
             log.info("Latest is different from current. Downloading newest version.");
             try {
                 try (InputStream is = nexusRepo.getArtifact(application.getLatest().getVersion(), null).openStream();

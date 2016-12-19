@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 import lombok.extern.slf4j.Slf4j;
 import no.difi.move.deploymanager.DeployManagerMain;
-import no.difi.move.deploymanager.domain.Application;
+import no.difi.move.deploymanager.domain.application.Application;
 
 /**
  *

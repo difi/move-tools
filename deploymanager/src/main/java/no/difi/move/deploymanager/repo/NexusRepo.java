@@ -1,4 +1,4 @@
-package no.difi.move.deploymanager.domain.repo;
+package no.difi.move.deploymanager.repo;
 
 import java.net.MalformedURLException;
 import java.net.URL;

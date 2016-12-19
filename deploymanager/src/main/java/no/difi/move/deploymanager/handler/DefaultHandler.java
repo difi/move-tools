@@ -8,7 +8,7 @@ import no.difi.move.deploymanager.action.application.PrepareApplicationAction;
 import no.difi.move.deploymanager.action.application.ShutdownAction;
 import no.difi.move.deploymanager.action.application.StartAction;
 import no.difi.move.deploymanager.action.application.ValidateAction;
-import no.difi.move.deploymanager.domain.Application;
+import no.difi.move.deploymanager.domain.application.Application;
 
 /**
  *

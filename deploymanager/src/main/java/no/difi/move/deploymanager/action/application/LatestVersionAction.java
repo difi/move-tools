@@ -8,8 +8,8 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import no.difi.move.deploymanager.DeployManagerMain;
 import no.difi.move.deploymanager.action.DeployActionException;
-import no.difi.move.deploymanager.domain.Application;
-import no.difi.move.deploymanager.domain.ApplicationMetadata;
+import no.difi.move.deploymanager.domain.application.Application;
+import no.difi.move.deploymanager.domain.application.ApplicationMetadata;
 import org.apache.commons.io.IOUtils;
 
 /**
@@ -32,8 +32,7 @@ public class LatestVersionAction extends AbstractApplicationAction {
             ApplicationMetadataDto dto = new ObjectMapper().readValue(result, ApplicationMetadataDto.class);
             application.setLatest(
                     ApplicationMetadata.builder()
-                            .repositoryId(dto.getLatest().getRepositoryId())
-                            .version(dto.getLatest().getBaseVersion()).build()
+                            .version(dto.getBaseVersion()).build()
             );
             return application;
         } catch (IOException ex) {
@@ -45,14 +44,9 @@ public class LatestVersionAction extends AbstractApplicationAction {
     @Data
     private static class ApplicationMetadataDto {
 
-        private Latest latest;
-    }
-
-    @Data
-    private static class Latest {
-
-        private String repositoryId;
         private String baseVersion;
+        private String version;
+        private String sha1;
     }
 
 }

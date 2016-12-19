@@ -6,8 +6,10 @@ import java.util.Properties;
 import lombok.extern.slf4j.Slf4j;
 import no.difi.move.deploymanager.DeployManagerMain;
 import no.difi.move.deploymanager.action.DeployActionException;
-import no.difi.move.deploymanager.domain.Application;
-import no.difi.move.deploymanager.domain.repo.DeployDirectoryRepo;
+import no.difi.move.deploymanager.domain.application.Application;
+import no.difi.move.deploymanager.domain.application.predicate.ApplicationHealthPredicate;
+import no.difi.move.deploymanager.domain.application.predicate.ApplicationVersionPredicate;
+import no.difi.move.deploymanager.repo.DeployDirectoryRepo;
 import org.apache.commons.io.IOUtils;
 
 /**
@@ -26,7 +28,7 @@ public class StartAction extends AbstractApplicationAction {
 
     @Override
     public Application apply(Application application) {
-        if (application.getHealth() && application.getCurrent().getVersion().equals(application.getLatest().getVersion())) {
+        if (new ApplicationHealthPredicate().and(new ApplicationVersionPredicate()).test(application)) {
             return application;
         }
         log.info("Start application.");
@@ -48,7 +50,7 @@ public class StartAction extends AbstractApplicationAction {
     }
 
     private void getOutput(Process exec) throws IOException {
-        if (!getManager().getProperties().getOrDefault("quiet", "true").equals("true")) {
+        if (getManager().getProperties().getOrDefault("verbose", "false").equals("true")) {
             IOUtils.copy(exec.getInputStream(), System.out);
         }
     }
