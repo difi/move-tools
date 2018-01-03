@@ -4,3 +4,9 @@ npm-debug.log
 /dashboard/move-dashboard/target/
 node_modules
 /deploymanager/target/
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
