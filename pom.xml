@@ -8,6 +8,7 @@
     <modules>
         <module>eureka</module>
         <module>dashboard</module>
+        <module>deploymanager</module>
     </modules>
 
     <scm>
