@@ -47,6 +47,7 @@ public class LatestVersionAction extends AbstractApplicationAction {
         private String baseVersion;
         private String version;
         private String sha1;
+        private String downloadUri;
     }
 
 }
