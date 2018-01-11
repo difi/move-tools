@@ -33,7 +33,7 @@ public class LatestVersionAction extends AbstractApplicationAction {
             application.setLatest(
                     ApplicationMetadata.builder()
                             .version(dto.getBaseVersion())
-                            .repositoryId(getManager().getProperties().getProperty("repository"))
+                            .repositoryId(getManager().getProperties().getProperty("repository", "staging"))
                             .sha1(dto.getSha1())
                             .build()
             );
