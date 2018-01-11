@@ -27,7 +27,7 @@ public class LatestVersionAction extends AbstractApplicationAction {
     public Application apply(Application application) {
         log.info("Getting latest version");
         try {
-            URLConnection connection = new URL("http://nexusproxy.azurewebsites.net/latest?env=staging").openConnection();
+            URLConnection connection = new URL(getManager().getProperties().getProperty("nexusProxyURL")).openConnection();
             String result = IOUtils.toString(connection.getInputStream(), connection.getContentEncoding());
             ApplicationMetadataDto dto = new ObjectMapper().readValue(result, ApplicationMetadataDto.class);
             application.setLatest(
