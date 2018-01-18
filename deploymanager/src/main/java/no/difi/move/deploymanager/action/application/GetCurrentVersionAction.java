@@ -1,7 +1,6 @@
 package no.difi.move.deploymanager.action.application;
 
 import lombok.extern.slf4j.Slf4j;
-import no.difi.move.deploymanager.DeployManagerMain;
 import no.difi.move.deploymanager.action.DeployActionException;
 import no.difi.move.deploymanager.domain.application.Application;
 import no.difi.move.deploymanager.domain.application.ApplicationMetadata;
@@ -18,9 +17,9 @@ public class GetCurrentVersionAction extends AbstractApplicationAction {
 
     private final DeployDirectoryRepo directoryRepo;
 
-    public GetCurrentVersionAction(DeployManagerMain manager) {
-        super(manager);
-        this.directoryRepo = new DeployDirectoryRepo(manager);
+    public GetCurrentVersionAction(Properties properties) {
+        super(properties);
+        this.directoryRepo = new DeployDirectoryRepo(properties);
     }
 
     @Override

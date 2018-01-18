@@ -1,10 +1,6 @@
 package no.difi.move.deploymanager.action.application;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
 import lombok.extern.slf4j.Slf4j;
-import no.difi.move.deploymanager.DeployManagerMain;
 import no.difi.move.deploymanager.action.DeployActionException;
 import no.difi.move.deploymanager.domain.application.Application;
 import no.difi.move.deploymanager.domain.application.predicate.ApplicationHealthPredicate;
@@ -12,8 +8,11 @@ import no.difi.move.deploymanager.domain.application.predicate.ApplicationVersio
 import no.difi.move.deploymanager.repo.DeployDirectoryRepo;
 import org.apache.commons.io.IOUtils;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
+
 /**
- *
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
  */
 @Slf4j
@@ -21,9 +20,9 @@ public class StartAction extends AbstractApplicationAction {
 
     private DeployDirectoryRepo directoryRepo;
 
-    public StartAction(DeployManagerMain manager) {
-        super(manager);
-        this.directoryRepo = new DeployDirectoryRepo(manager);
+    public StartAction(Properties properties) {
+        super(properties);
+        this.directoryRepo = new DeployDirectoryRepo(properties);
     }
 
     @Override
@@ -36,7 +35,7 @@ public class StartAction extends AbstractApplicationAction {
             Process exec = Runtime.getRuntime().exec(
                     "java -jar " + application.getFile().getAbsolutePath() + " --endpoints.shutdown.enabled=true",
                     null,
-                    new File(getManager().getProperties().getProperty("root")));
+                    new File(getProperties().getProperty("root")));
 
             getOutput(exec);
 
@@ -50,7 +49,7 @@ public class StartAction extends AbstractApplicationAction {
     }
 
     private void getOutput(Process exec) throws IOException {
-        if (getManager().getProperties().getOrDefault("verbose", "false").equals("true")) {
+        if (getProperties().getOrDefault("verbose", "false").equals("true")) {
             IOUtils.copy(exec.getInputStream(), System.out);
         }
     }

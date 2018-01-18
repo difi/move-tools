@@ -1,23 +1,19 @@
 package no.difi.move.deploymanager.action.application;
 
 import ch.qos.logback.core.encoder.ByteArrayUtil;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import lombok.extern.slf4j.Slf4j;
-import no.difi.move.deploymanager.DeployManagerMain;
 import no.difi.move.deploymanager.action.DeployActionException;
 import no.difi.move.deploymanager.domain.application.Application;
 import no.difi.move.deploymanager.repo.NexusRepo;
 import org.apache.commons.io.IOUtils;
 
+import java.io.*;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Properties;
+
 /**
- *
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
  */
 @Slf4j
@@ -25,9 +21,9 @@ public class ValidateAction extends AbstractApplicationAction {
 
     private final NexusRepo nexusRepo;
 
-    public ValidateAction(DeployManagerMain manager) {
-        super(manager);
-        this.nexusRepo = new NexusRepo(manager);
+    public ValidateAction(Properties properties) {
+        super(properties);
+        this.nexusRepo = new NexusRepo(properties);
     }
 
     @Override
@@ -58,7 +54,7 @@ public class ValidateAction extends AbstractApplicationAction {
 
             IOUtils.copy(is, os);
 
-            while (digestInputStream.read(buffer) != -1);
+            while (digestInputStream.read(buffer) != -1) ;
 
             return MessageDigest.isEqual(instance.digest(), ByteArrayUtil.hexStringToByteArray(os.toString()));
         }

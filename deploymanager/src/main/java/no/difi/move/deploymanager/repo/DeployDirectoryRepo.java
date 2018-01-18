@@ -14,10 +14,10 @@ import no.difi.move.deploymanager.DeployManagerMain;
  */
 public class DeployDirectoryRepo {
 
-    private final DeployManagerMain manager;
+    private final Properties properties;
 
-    public DeployDirectoryRepo(DeployManagerMain manager) {
-        this.manager = manager;
+    public DeployDirectoryRepo(Properties properties) {
+        this.properties = properties;
     }
 
     public Properties getMetadata() throws IOException {
@@ -49,7 +49,7 @@ public class DeployDirectoryRepo {
     }
 
     private File getRoot() {
-        File root = new File(manager.getProperties().getProperty("root"));
+        File root = new File(properties.getProperty("root"));
         if (!root.exists()) {
             root.mkdir();
         }
