@@ -29,7 +29,7 @@ public class ShutdownAction extends AbstractApplicationAction {
         try {
             HttpURLConnection connection = (HttpURLConnection) new URL(getProperties().getProperty("shutdownURL")).openConnection();
             connection.setRequestMethod("POST");
-            connection.connect();
+            connection.getContent();
         } catch (IOException ex) {
             log.error(null, ex);
         }
