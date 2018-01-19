@@ -2,6 +2,7 @@ package no.difi.move.deploymanager.action.application;
 
 import lombok.extern.slf4j.Slf4j;
 import no.difi.move.deploymanager.action.DeployActionException;
+import no.difi.move.deploymanager.config.DeployManagerProperties;
 import no.difi.move.deploymanager.domain.application.Application;
 import no.difi.move.deploymanager.domain.application.predicate.ApplicationHealthPredicate;
 import no.difi.move.deploymanager.domain.application.predicate.ApplicationVersionPredicate;
@@ -20,7 +21,7 @@ public class StartAction extends AbstractApplicationAction {
 
     private DeployDirectoryRepo directoryRepo;
 
-    public StartAction(Properties properties) {
+    public StartAction(DeployManagerProperties properties) {
         super(properties);
         this.directoryRepo = new DeployDirectoryRepo(properties);
     }
@@ -36,7 +37,7 @@ public class StartAction extends AbstractApplicationAction {
             Process exec = Runtime.getRuntime().exec(
                     "java -jar " + application.getFile().getAbsolutePath() + " --endpoints.shutdown.enabled=true",
                     null,
-                    new File(getProperties().getProperty("root")));
+                    new File(getProperties().getRoot()));
 
             getOutput(exec);
 
@@ -50,7 +51,7 @@ public class StartAction extends AbstractApplicationAction {
     }
 
     private void getOutput(Process exec) throws IOException {
-        if (getProperties().getOrDefault("verbose", "false").equals("true")) {
+        if (getProperties().isVerbose()) {
             IOUtils.copy(exec.getInputStream(), System.out);
         }
     }

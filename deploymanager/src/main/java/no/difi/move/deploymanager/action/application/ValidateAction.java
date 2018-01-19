@@ -3,6 +3,7 @@ package no.difi.move.deploymanager.action.application;
 import ch.qos.logback.core.encoder.ByteArrayUtil;
 import lombok.extern.slf4j.Slf4j;
 import no.difi.move.deploymanager.action.DeployActionException;
+import no.difi.move.deploymanager.config.DeployManagerProperties;
 import no.difi.move.deploymanager.domain.application.Application;
 import no.difi.move.deploymanager.repo.NexusRepo;
 import org.apache.commons.io.IOUtils;
@@ -11,7 +12,6 @@ import java.io.*;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Properties;
 
 /**
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
@@ -21,7 +21,7 @@ public class ValidateAction extends AbstractApplicationAction {
 
     private final NexusRepo nexusRepo;
 
-    public ValidateAction(Properties properties) {
+    public ValidateAction(DeployManagerProperties properties) {
         super(properties);
         this.nexusRepo = new NexusRepo(properties);
     }

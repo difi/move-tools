@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import no.difi.move.deploymanager.action.DeployActionException;
+import no.difi.move.deploymanager.config.DeployManagerProperties;
 import no.difi.move.deploymanager.domain.application.Application;
 import no.difi.move.deploymanager.domain.application.ApplicationMetadata;
 import org.apache.commons.io.IOUtils;
@@ -19,7 +20,7 @@ import java.util.Properties;
 @Slf4j
 public class LatestVersionAction extends AbstractApplicationAction {
 
-    public LatestVersionAction(Properties properties) {
+    public LatestVersionAction(DeployManagerProperties properties) {
         super(properties);
     }
 
@@ -28,13 +29,13 @@ public class LatestVersionAction extends AbstractApplicationAction {
         log.debug("Running LatestVersionAction.");
         log.info("Getting latest version");
         try {
-            URLConnection connection = new URL(getProperties().getProperty("nexusProxyURL")).openConnection();
+            URLConnection connection = getProperties().getNexusProxyURL().openConnection();
             String result = IOUtils.toString(connection.getInputStream(), connection.getContentEncoding());
             ApplicationMetadataDto dto = new ObjectMapper().readValue(result, ApplicationMetadataDto.class);
             application.setLatest(
                     ApplicationMetadata.builder()
                             .version(dto.getBaseVersion())
-                            .repositoryId(getProperties().getProperty("repository", "staging"))
+                            .repositoryId(getProperties().getRepository())
                             .sha1(dto.getSha1())
                             .build()
             );

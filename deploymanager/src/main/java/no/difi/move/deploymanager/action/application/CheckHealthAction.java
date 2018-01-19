@@ -1,6 +1,7 @@
 package no.difi.move.deploymanager.action.application;
 
 import lombok.extern.slf4j.Slf4j;
+import no.difi.move.deploymanager.config.DeployManagerProperties;
 import no.difi.move.deploymanager.domain.application.Application;
 
 import java.io.IOException;
@@ -13,7 +14,7 @@ import java.util.Properties;
 @Slf4j
 public class CheckHealthAction extends AbstractApplicationAction {
 
-    public CheckHealthAction(Properties properties) {
+    public CheckHealthAction(DeployManagerProperties properties) {
         super(properties);
     }
 
@@ -22,7 +23,7 @@ public class CheckHealthAction extends AbstractApplicationAction {
         log.debug("Running CheckHealthAction.");
         log.info("Performing health check.");
         try {
-            Object content = new URL(getProperties().getProperty("healthURL")).getContent();
+            Object content = getProperties().getHealthURL().getContent();
             t.setHealth(true);
         } catch (IOException ex) {
             log.warn(null, ex);

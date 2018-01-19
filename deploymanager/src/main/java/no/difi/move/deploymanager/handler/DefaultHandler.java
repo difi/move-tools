@@ -2,13 +2,11 @@ package no.difi.move.deploymanager.handler;
 
 import lombok.extern.slf4j.Slf4j;
 import no.difi.move.deploymanager.action.application.*;
+import no.difi.move.deploymanager.config.DeployManagerProperties;
 import no.difi.move.deploymanager.domain.application.Application;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
-import java.util.Properties;
 
 /**
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
@@ -17,9 +15,11 @@ import java.util.Properties;
 @Component
 public class DefaultHandler implements AbstractHandler {
 
-    @Autowired
-    @Qualifier("DeployManagerConfig")
-    private Properties properties;
+    private DeployManagerProperties properties;
+
+    public DefaultHandler(DeployManagerProperties properties) {
+        this.properties = properties;
+    }
 
     @Override
     @Scheduled(fixedRate = 120000)

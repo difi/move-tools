@@ -1,21 +1,26 @@
 package no.difi.move.deploymanager.command;
 
 import no.difi.move.deploymanager.DeployManagerMain;
+import no.difi.move.deploymanager.config.DeployManagerProperties;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
+import org.springframework.stereotype.Component;
 
 /**
- *
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
  */
+@Component
 public class EnvironmentCommand implements AbstractCommand {
 
-    public EnvironmentCommand() {
+    private DeployManagerProperties properties;
+
+    public EnvironmentCommand(DeployManagerProperties properties) {
+        this.properties = properties;
     }
 
     @Override
     public void run(DeployManagerMain config) {
-        config.getProperties().setProperty("environment", config.getCommandLine().getOptionValue("e"));
+        properties.setEnvironment(config.getCommandLine().getOptionValue("e"));
     }
 
     @Override
