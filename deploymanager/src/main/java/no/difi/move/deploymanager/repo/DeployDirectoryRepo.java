@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 import no.difi.move.deploymanager.DeployManagerMain;
+import no.difi.move.deploymanager.config.DeployManagerProperties;
 
 /**
  *
@@ -14,9 +15,9 @@ import no.difi.move.deploymanager.DeployManagerMain;
  */
 public class DeployDirectoryRepo {
 
-    private final Properties properties;
+    private final DeployManagerProperties properties;
 
-    public DeployDirectoryRepo(Properties properties) {
+    public DeployDirectoryRepo(DeployManagerProperties properties) {
         this.properties = properties;
     }
 
@@ -49,7 +50,7 @@ public class DeployDirectoryRepo {
     }
 
     private File getRoot() {
-        File root = new File(properties.getProperty("root"));
+        File root = new File(properties.getRoot());
         if (!root.exists()) {
             root.mkdir();
         }

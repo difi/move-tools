@@ -1,8 +1,9 @@
 package no.difi.move.deploymanager.repo;
 
+import no.difi.move.deploymanager.config.DeployManagerProperties;
+
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -10,21 +11,21 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class NexusRepo {
 
-    private final Properties properties;
+    private final DeployManagerProperties properties;
 
-    public NexusRepo(Properties properties) {
+    public NexusRepo(DeployManagerProperties properties) {
         this.properties = properties;
     }
 
     public URL getArtifact(String version, String classifier)
             throws MalformedURLException {
         StringBuilder url = new StringBuilder();
-        url.append(properties.getProperty("nexus", "https://beta-meldingsutveksling.difi.no"));
+        url.append(properties.getNexus());
         url.append("/service/local/artifact/maven/content?");
         ConcurrentHashMap<String, String> query = new ConcurrentHashMap<>();
-        query.put("r", properties.getProperty("repository", "staging"));
-        query.put("g", properties.getProperty("groupId", "no.difi.meldingsutveksling"));
-        query.put("a", properties.getProperty("artifactId", "integrasjonspunkt"));
+        query.put("r", properties.getRepository());
+        query.put("g", properties.getGroupId());
+        query.put("a", properties.getArtifactId());
         query.put("v", version);
         if (classifier != null) {
             query.put("e", classifier);
