@@ -27,6 +27,7 @@ public class StartAction extends AbstractApplicationAction {
 
     @Override
     public Application apply(Application application) {
+        log.debug("Running StartAction.");
         if (new ApplicationHealthPredicate().and(new ApplicationVersionPredicate()).test(application)) {
             return application;
         }

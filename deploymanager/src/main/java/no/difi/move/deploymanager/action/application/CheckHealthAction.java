@@ -19,6 +19,7 @@ public class CheckHealthAction extends AbstractApplicationAction {
 
     @Override
     public Application apply(Application t) {
+        log.debug("Running CheckHealthAction.");
         log.info("Performing health check.");
         try {
             Object content = new URL(getProperties().getProperty("healthURL")).getContent();

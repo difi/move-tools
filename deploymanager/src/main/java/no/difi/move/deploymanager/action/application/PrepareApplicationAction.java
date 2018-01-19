@@ -24,6 +24,7 @@ public class PrepareApplicationAction extends AbstractApplicationAction {
     }
 
     public Application apply(Application application) {
+        log.debug("Running PrepareApplicationAction.");
         log.info("Prepare jar.");
         String root = getProperties().getProperty("root");
         File download = new File(root, "integrasjonspunkt-" + application.getLatest().getVersion() + ".jar");

@@ -28,6 +28,7 @@ public class ValidateAction extends AbstractApplicationAction {
 
     @Override
     public Application apply(Application application) {
+        log.debug("Running ValidateAction.");
         log.info("Validating jar.");
         try {
             if (!verifyChecksum(application.getFile(), application.getLatest().getVersion(), ALGORITHM.SHA1)) {

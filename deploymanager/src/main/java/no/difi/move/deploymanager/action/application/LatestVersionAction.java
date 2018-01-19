@@ -25,6 +25,7 @@ public class LatestVersionAction extends AbstractApplicationAction {
 
     @Override
     public Application apply(Application application) {
+        log.debug("Running LatestVersionAction.");
         log.info("Getting latest version");
         try {
             URLConnection connection = new URL(getProperties().getProperty("nexusProxyURL")).openConnection();

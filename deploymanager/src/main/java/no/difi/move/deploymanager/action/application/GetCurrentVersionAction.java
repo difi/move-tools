@@ -24,6 +24,7 @@ public class GetCurrentVersionAction extends AbstractApplicationAction {
 
     @Override
     public Application apply(Application t) {
+        log.debug("Running GetCurrentVersionAction.");
         log.info("Getting current version");
         try {
             Properties metadata = directoryRepo.getMetadata();

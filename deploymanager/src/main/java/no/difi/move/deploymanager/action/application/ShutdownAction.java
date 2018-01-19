@@ -22,6 +22,7 @@ public class ShutdownAction extends AbstractApplicationAction {
 
     @Override
     public Application apply(Application application) {
+        log.debug("Running ShutdownAction.");
         if (new ApplicationVersionPredicate().or(new ApplicationHealthPredicate().negate()).test(application)) {
             return application;
         }

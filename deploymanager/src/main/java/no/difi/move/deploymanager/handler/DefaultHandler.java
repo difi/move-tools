@@ -24,7 +24,7 @@ public class DefaultHandler implements AbstractHandler {
     @Override
     @Scheduled(fixedRate = 120000)
     public void run() {
-        log.info("Starting synchronization.");
+        log.debug("Starting synchronization.");
         new GetCurrentVersionAction(properties)
                 .andThen(new LatestVersionAction(properties))
                 .andThen(new PrepareApplicationAction(properties))
@@ -33,6 +33,7 @@ public class DefaultHandler implements AbstractHandler {
                 .andThen(new ShutdownAction(properties))
                 .andThen(new StartAction(properties))
                 .apply(new Application());
+        log.debug("Running StartAction.");
     }
 
 }
