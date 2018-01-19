@@ -6,11 +6,14 @@ import lombok.extern.slf4j.Slf4j;
 import no.difi.move.deploymanager.command.AbstractCommand;
 import no.difi.move.deploymanager.config.CommandLineOptions;
 import no.difi.move.deploymanager.handler.AbstractHandler;
-import no.difi.move.deploymanager.handler.DefaultHandler;
 import org.apache.commons.cli.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -25,16 +28,22 @@ import java.util.Properties;
 @Data
 @Slf4j
 @SpringBootApplication
-public class DeployManagerMain implements CommandLineRunner{
+@EnableScheduling
+public class DeployManagerMain implements CommandLineRunner {
 
     private Properties properties = new Properties();
     private CommandLine commandLine;
     private Options options;
     private List<AbstractCommand> commands;
-    private Class<? extends AbstractHandler> handler = DefaultHandler.class;
 
     public static void main(String[] args) throws Throwable {
         SpringApplication.run(DeployManagerMain.class, args);
+    }
+
+    @Bean
+    @Qualifier("DeployManagerConfig")
+    public Properties getProperties() {
+        return properties;
     }
 
     private void initialize(String[] args) {
@@ -80,15 +89,6 @@ public class DeployManagerMain implements CommandLineRunner{
     public void run(String[] args) {
         initialize(args);
         runCommands();
-        run();
-    }
-
-    private void run() {
-        try {
-            handler.newInstance().run(properties);
-        } catch (InstantiationException | IllegalAccessException ex) {
-            log.error(null, ex);
-        }
     }
 
     private void runCommands() {
