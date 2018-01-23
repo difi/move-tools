@@ -9,7 +9,7 @@ import java.net.URL;
 
 @Data
 @Validated
-@ConfigurationProperties(prefix = "no.difi.move.deploymanager")
+@ConfigurationProperties(prefix = "deploymanager")
 public class DeployManagerProperties {
     @NotNull
     private String root;
