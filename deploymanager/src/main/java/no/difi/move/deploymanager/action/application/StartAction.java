@@ -34,8 +34,12 @@ public class StartAction extends AbstractApplicationAction {
         }
         log.info("Start application.");
         try {
+            String profile = getProperties().getIntegrasjonspunkt().getProfile();
             Process exec = Runtime.getRuntime().exec(
-                    "java -jar " + application.getFile().getAbsolutePath() + " --endpoints.shutdown.enabled=true",
+                    "java -jar "
+                            + application.getFile().getAbsolutePath()
+                            + " --endpoints.shutdown.enabled=true"
+                            + String.format("--spring.profiles.active=%s", profile),
                     null,
                     new File(getProperties().getRoot()));
 

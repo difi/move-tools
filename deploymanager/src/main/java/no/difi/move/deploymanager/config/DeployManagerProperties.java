@@ -4,6 +4,7 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.net.URL;
 
@@ -30,4 +31,13 @@ public class DeployManagerProperties {
     private String environment = "";
     @NotNull
     private boolean verbose;
+
+    @Valid
+    private IntegrasjonspunktProperties integrasjonspunkt;
+
+    @Data
+    public static class IntegrasjonspunktProperties {
+        @NotNull
+        private String profile;
+    }
 }
