@@ -6,9 +6,11 @@ import no.difi.move.deploymanager.action.DeployActionException;
 import no.difi.move.deploymanager.config.DeployManagerProperties;
 import no.difi.move.deploymanager.domain.application.Application;
 import no.difi.move.deploymanager.repo.NexusRepo;
+import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -53,7 +55,7 @@ public class ValidateAction extends AbstractApplicationAction {
                 StringWriter os = new StringWriter();
                 DigestInputStream digestInputStream = new DigestInputStream(new FileInputStream(file), instance);) {
 
-            IOUtils.copy(is, os);
+            IOUtils.copy(is, os, Charset.defaultCharset());
 
             while (digestInputStream.read(buffer) != -1) ;
 
