@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
+import org.springframework.validation.FieldError;
 
 import java.io.IOException;
 import java.net.URL;
@@ -27,6 +28,7 @@ public class DeployManagerPropertiesValidatorTest {
         propertiesMock.setRoot("folder/path");
         propertiesMock.setShutdownURL(new URL("http://shutdown.url.here"));
         propertiesMock.setVerbose(false);
+        propertiesMock.setSchedulerFixedRateInMs("120000");
         DeployManagerProperties.IntegrasjonspunktProperties intPropMock = new DeployManagerProperties.IntegrasjonspunktProperties();
         intPropMock.setProfile("itest");
         propertiesMock.setIntegrasjonspunkt(intPropMock);
@@ -109,6 +111,42 @@ public class DeployManagerPropertiesValidatorTest {
         validatorUnderTest.validate(propertiesMock, errors);
         Assert.assertTrue(errors.hasErrors());
         Assert.assertNotNull(errors.getFieldError("nexusProxyURL"));
+    }
+
+    @Test
+    public void missingSchedulerRate_validationShouldFail() {
+        propertiesMock.setSchedulerFixedRateInMs(null);
+        Errors errors = new BeanPropertyBindingResult(propertiesMock, "missingSchedulerRate");
+        validatorUnderTest.validate(propertiesMock, errors);
+        Assert.assertTrue(errors.hasErrors());
+        Assert.assertNotNull(errors.getFieldError("schedulerFixedRateInMs"));
+    }
+
+    @Test
+    public void inadequateSchedulerRate_validationShouldFail() {
+        propertiesMock.setSchedulerFixedRateInMs("1000");
+        Errors errors = new BeanPropertyBindingResult(propertiesMock, "inadequateSchedulerRate");
+        validatorUnderTest.validate(propertiesMock, errors);
+        Assert.assertTrue(errors.hasErrors());
+        Assert.assertNotNull(errors.getFieldError("schedulerFixedRateInMs"));
+    }
+
+    @Test
+    public void negativeSchedulerRate_validationShouldFail() {
+        propertiesMock.setSchedulerFixedRateInMs("-1");
+        Errors errors = new BeanPropertyBindingResult(propertiesMock, "negativeSchedulerRate");
+        validatorUnderTest.validate(propertiesMock, errors);
+        Assert.assertTrue(errors.hasErrors());
+        Assert.assertNotNull(errors.getFieldError("schedulerFixedRateInMs"));
+    }
+
+    @Test
+    public void invalidSchedulerRate_validationShouldFail() {
+        propertiesMock.setSchedulerFixedRateInMs("noNumberToday");
+        Errors errors = new BeanPropertyBindingResult(propertiesMock, "invalidSchedulerRate");
+        validatorUnderTest.validate(propertiesMock, errors);
+        Assert.assertTrue(errors.hasErrors());
+        Assert.assertNotNull(errors.getFieldError("schedulerFixedRateInMs"));
     }
 
     @Test

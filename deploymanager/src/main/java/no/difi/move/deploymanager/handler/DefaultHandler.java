@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.difi.move.deploymanager.action.application.*;
 import no.difi.move.deploymanager.config.DeployManagerProperties;
 import no.difi.move.deploymanager.domain.application.Application;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +21,7 @@ public class DefaultHandler implements AbstractHandler {
     }
 
     @Override
-    @Scheduled(fixedRate = 120000)
+    @Scheduled(fixedRateString = "${deploymanager.schedulerFixedRateInMs}")
     public void run() {
         log.debug("Starting synchronization.");
         new GetCurrentVersionAction(properties)

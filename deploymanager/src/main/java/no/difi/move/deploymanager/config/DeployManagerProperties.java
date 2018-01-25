@@ -31,6 +31,8 @@ public class DeployManagerProperties {
     private String environment = "";
     @NotNull
     private boolean verbose;
+    @NotNull
+    private String schedulerFixedRateInMs;
 
     @Valid
     private IntegrasjonspunktProperties integrasjonspunkt;
