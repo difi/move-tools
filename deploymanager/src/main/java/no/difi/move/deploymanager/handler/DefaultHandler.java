@@ -33,7 +33,7 @@ public class DefaultHandler implements AbstractHandler {
                 .andThen(new ShutdownAction(properties))
                 .andThen(new StartAction(properties))
                 .apply(new Application());
-        log.debug("Running StartAction.");
+        log.debug("Finished synchronization.");
     }
 
 }
