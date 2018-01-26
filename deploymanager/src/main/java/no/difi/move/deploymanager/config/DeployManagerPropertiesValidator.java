@@ -7,7 +7,7 @@ import org.springframework.validation.Validator;
 public class DeployManagerPropertiesValidator implements Validator {
 
     public static final String NOT_EMPTY_MESSAGE = "Property must not be empty.";
-    private final long minimumSchedulerRateInMs = 120000;
+    private final long minimumSchedulerRateInMs = 120000L;
 
     @Override
     public boolean supports(Class<?> aClass) {
