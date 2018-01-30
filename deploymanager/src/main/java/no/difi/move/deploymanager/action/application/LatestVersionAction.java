@@ -10,9 +10,8 @@ import no.difi.move.deploymanager.domain.application.ApplicationMetadata;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
 import java.net.URLConnection;
-import java.util.Properties;
 
 /**
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
@@ -28,9 +27,11 @@ public class LatestVersionAction extends AbstractApplicationAction {
     public Application apply(Application application) {
         log.debug("Running LatestVersionAction.");
         log.info("Getting latest version");
+
         try {
             URLConnection connection = getProperties().getNexusProxyURL().openConnection();
-            String result = IOUtils.toString(connection.getInputStream(), connection.getContentEncoding());
+            InputStream inputStream = connection.getInputStream();
+            String result = IOUtils.toString(inputStream, connection.getContentEncoding());
             ApplicationMetadataDto dto = new ObjectMapper().readValue(result, ApplicationMetadataDto.class);
             application.setLatest(
                     ApplicationMetadata.builder()
@@ -39,6 +40,7 @@ public class LatestVersionAction extends AbstractApplicationAction {
                             .sha1(dto.getSha1())
                             .build()
             );
+            inputStream.close();
             return application;
         } catch (IOException ex) {
             log.error(null, ex);
