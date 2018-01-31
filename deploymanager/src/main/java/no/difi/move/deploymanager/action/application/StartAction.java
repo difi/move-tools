@@ -40,7 +40,7 @@ public class StartAction extends AbstractApplicationAction {
                             + application.getFile().getAbsolutePath()
                             + " --endpoints.shutdown.enabled=true"
                             + " --endpoints.health.enabled=true"
-                            + String.format(" --spring.profiles.active=%s", profile)
+                            + " --spring.profiles.active=" + profile
                             + " --app.logger.enableSSL=false",
                     null,
                     new File(getProperties().getRoot()));
