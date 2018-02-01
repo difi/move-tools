@@ -31,10 +31,11 @@ public class StartAction extends AbstractApplicationAction {
     @Override
     public Application apply(Application application) {
         log.debug("Running StartAction.");
-        if (new ApplicationHealthPredicate().and(new ApplicationVersionPredicate()).test(application)) {
+        if (isAlreadyRunning(application)) {
+            log.info("The selected application is already running.");
             return application;
         }
-        log.info("Start application.");
+
         try {
             String profile = getProperties().getIntegrasjonspunkt().getProfile();
             String jarPath = application.getFile().getAbsolutePath();
@@ -49,7 +50,12 @@ public class StartAction extends AbstractApplicationAction {
         }
     }
 
+    private boolean isAlreadyRunning(Application application) {
+        return new ApplicationHealthPredicate().and(new ApplicationVersionPredicate()).test(application);
+    }
+
     private Process startProcess(String jarPath, String profile) throws IOException {
+        log.info("Starting application.");
         return Runtime.getRuntime().exec(
                 "java -jar "
                         + jarPath
