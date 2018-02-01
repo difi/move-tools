@@ -18,9 +18,9 @@ public class GetCurrentVersionAction extends AbstractApplicationAction {
 
     private final DeployDirectoryRepo directoryRepo;
 
-    public GetCurrentVersionAction(DeployManagerProperties properties) {
+    public GetCurrentVersionAction(DeployManagerProperties properties, DeployDirectoryRepo directoryRepo) {
         super(properties);
-        this.directoryRepo = new DeployDirectoryRepo(properties);
+        this.directoryRepo = directoryRepo;
     }
 
     @Override

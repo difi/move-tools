@@ -24,9 +24,9 @@ public class StartAction extends AbstractApplicationAction {
 
     private DeployDirectoryRepo directoryRepo;
 
-    public StartAction(DeployManagerProperties properties) {
+    public StartAction(DeployManagerProperties properties, DeployDirectoryRepo directoryRepo) {
         super(properties);
-        this.directoryRepo = new DeployDirectoryRepo(properties);
+        this.directoryRepo = directoryRepo;
     }
 
     @Override
