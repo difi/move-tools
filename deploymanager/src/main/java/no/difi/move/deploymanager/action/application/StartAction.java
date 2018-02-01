@@ -8,6 +8,7 @@ import no.difi.move.deploymanager.domain.application.predicate.ApplicationHealth
 import no.difi.move.deploymanager.domain.application.predicate.ApplicationVersionPredicate;
 import no.difi.move.deploymanager.repo.DeployDirectoryRepo;
 import org.apache.commons.io.IOUtils;
+import org.springframework.util.Assert;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,41 +31,42 @@ public class StartAction extends AbstractApplicationAction {
 
     @Override
     public Application apply(Application application) {
+        Assert.notNull(application, "application");
+
         log.debug("Running StartAction.");
         if (isAlreadyRunning(application)) {
-            log.info("The selected application is already running.");
+            log.info("The application is already running.");
             return application;
         }
 
-        try {
-            String profile = getProperties().getIntegrasjonspunkt().getProfile();
-            String jarPath = application.getFile().getAbsolutePath();
-            Process exec = startProcess(jarPath, profile);
-            consumeOutput(exec);
-            updateMetadata(application);
+        String profile = getProperties().getIntegrasjonspunkt().getProfile();
+        String jarPath = application.getFile().getAbsolutePath();
+        Process exec = startProcess(jarPath, profile);
+        consumeOutput(exec);
+        updateMetadata(application);
 
-            return application;
-        } catch (IOException ex) {
-            log.error(null, ex);
-            throw new DeployActionException("Error starting application", ex);
-        }
+        return application;
     }
 
     private boolean isAlreadyRunning(Application application) {
         return new ApplicationHealthPredicate().and(new ApplicationVersionPredicate()).test(application);
     }
 
-    private Process startProcess(String jarPath, String profile) throws IOException {
-        log.info("Starting application.");
-        return Runtime.getRuntime().exec(
-                "java -jar "
-                        + jarPath
-                        + " --endpoints.shutdown.enabled=true"
-                        + " --endpoints.health.enabled=true"
-                        + " --spring.profiles.active=" + profile
-                        + " --app.logger.enableSSL=false",
-                null,
-                new File(getProperties().getRoot()));
+    private Process startProcess(String jarPath, String profile) {
+        try {
+            log.info("Starting application.");
+            return Runtime.getRuntime().exec(
+                    "java -jar "
+                            + jarPath
+                            + " --endpoints.shutdown.enabled=true"
+                            + " --endpoints.health.enabled=true"
+                            + " --spring.profiles.active=" + profile
+                            + " --app.logger.enableSSL=false",
+                    null,
+                    new File(getProperties().getRoot()));
+        } catch (IOException e) {
+            throw new DeployActionException("Failed to start process.", e);
+        }
     }
 
     private void consumeOutput(Process exec) {
@@ -73,7 +75,7 @@ public class StartAction extends AbstractApplicationAction {
             try (InputStream inputStream = exec.getInputStream()) {
                 IOUtils.copy(inputStream, outputStream);
             } catch (IOException e) {
-                log.error(null, e);
+                throw new DeployActionException("Could not consume output stream.", e);
             }
         }).start();
     }
@@ -89,16 +91,19 @@ public class StartAction extends AbstractApplicationAction {
         };
     }
 
-    private void updateMetadata(Application application) throws IOException {
-        Properties metadata = directoryRepo.getMetadata();
+    private void updateMetadata(Application application) {
+        try {
+            Properties metadata = directoryRepo.getMetadata();
+            metadata.setProperty("version", application.getLatest().getVersion());
+            if (application.getLatest().getSha1() != null) {
+                metadata.setProperty("sha1", application.getLatest().getSha1());
+            }
+            metadata.setProperty("repositoryId", application.getLatest().getRepositoryId());
 
-        metadata.setProperty("version", application.getLatest().getVersion());
-        if (application.getLatest().getSha1() != null) {
-            metadata.setProperty("sha1", application.getLatest().getSha1());
+            directoryRepo.setMetadata(metadata);
+        } catch (IOException e) {
+            throw new DeployActionException("Could not update metadata.", e);
         }
-        metadata.setProperty("repositoryId", application.getLatest().getRepositoryId());
-
-        directoryRepo.setMetadata(metadata);
     }
 
 }
