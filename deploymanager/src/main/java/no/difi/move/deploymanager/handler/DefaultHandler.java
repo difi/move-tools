@@ -5,6 +5,7 @@ import no.difi.move.deploymanager.action.application.*;
 import no.difi.move.deploymanager.config.DeployManagerProperties;
 import no.difi.move.deploymanager.domain.application.Application;
 import no.difi.move.deploymanager.repo.DeployDirectoryRepo;
+import no.difi.move.deploymanager.repo.NexusRepo;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -17,10 +18,12 @@ public class DefaultHandler implements AbstractHandler {
 
     private DeployManagerProperties properties;
     private DeployDirectoryRepo directoryRepo;
+    private NexusRepo nexusRepo;
 
-    public DefaultHandler(DeployManagerProperties properties, DeployDirectoryRepo repo) {
+    public DefaultHandler(DeployManagerProperties properties, DeployDirectoryRepo repo, NexusRepo nexusRepo) {
         this.properties = properties;
         this.directoryRepo = repo;
+        this.nexusRepo = nexusRepo;
     }
 
     @Override
@@ -29,8 +32,8 @@ public class DefaultHandler implements AbstractHandler {
         log.debug("Starting synchronization.");
         new GetCurrentVersionAction(properties, directoryRepo)
                 .andThen(new LatestVersionAction(properties))
-                .andThen(new PrepareApplicationAction(properties))
-                .andThen(new ValidateAction(properties))
+                .andThen(new PrepareApplicationAction(properties, nexusRepo))
+                .andThen(new ValidateAction(properties, nexusRepo))
                 .andThen(new CheckHealthAction(properties))
                 .andThen(new ShutdownAction(properties))
                 .andThen(new StartAction(properties, directoryRepo))

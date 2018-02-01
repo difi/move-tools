@@ -19,9 +19,9 @@ public class PrepareApplicationAction extends AbstractApplicationAction {
 
     private final NexusRepo nexusRepo;
 
-    public PrepareApplicationAction(DeployManagerProperties properties) {
+    public PrepareApplicationAction(DeployManagerProperties properties, NexusRepo nexusRepo) {
         super(properties);
-        this.nexusRepo = new NexusRepo(properties);
+        this.nexusRepo = nexusRepo;
     }
 
     public Application apply(Application application) {

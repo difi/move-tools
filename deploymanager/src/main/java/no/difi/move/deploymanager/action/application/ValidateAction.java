@@ -23,9 +23,9 @@ public class ValidateAction extends AbstractApplicationAction {
 
     private final NexusRepo nexusRepo;
 
-    public ValidateAction(DeployManagerProperties properties) {
+    public ValidateAction(DeployManagerProperties properties, NexusRepo nexusRepo) {
         super(properties);
-        this.nexusRepo = new NexusRepo(properties);
+        this.nexusRepo = nexusRepo;
     }
 
     @Override
