@@ -6,7 +6,6 @@ import no.difi.move.deploymanager.config.DeployManagerProperties;
 import no.difi.move.deploymanager.domain.application.Application;
 import no.difi.move.deploymanager.domain.application.predicate.ApplicationHealthPredicate;
 import no.difi.move.deploymanager.domain.application.predicate.ApplicationVersionPredicate;
-import no.difi.move.deploymanager.repo.DeployDirectoryRepo;
 import org.apache.commons.io.IOUtils;
 import org.springframework.util.Assert;
 
@@ -14,7 +13,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Properties;
 
 /**
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
@@ -22,11 +20,8 @@ import java.util.Properties;
 @Slf4j
 public class StartAction extends AbstractApplicationAction {
 
-    private DeployDirectoryRepo directoryRepo;
-
     public StartAction(DeployManagerProperties properties) {
         super(properties);
-        this.directoryRepo = new DeployDirectoryRepo(properties);
     }
 
     @Override
@@ -43,7 +38,6 @@ public class StartAction extends AbstractApplicationAction {
         String jarPath = application.getFile().getAbsolutePath();
         Process exec = startProcess(jarPath, startupProfile);
         consumeOutput(exec);
-        updateMetadata(application);
 
         return application;
     }
@@ -89,21 +83,6 @@ public class StartAction extends AbstractApplicationAction {
 
             }
         };
-    }
-
-    private void updateMetadata(Application application) {
-        try {
-            Properties metadata = directoryRepo.getMetadata();
-            metadata.setProperty("version", application.getLatest().getVersion());
-            if (application.getLatest().getSha1() != null) {
-                metadata.setProperty("sha1", application.getLatest().getSha1());
-            }
-            metadata.setProperty("repositoryId", application.getLatest().getRepositoryId());
-
-            directoryRepo.setMetadata(metadata);
-        } catch (IOException e) {
-            throw new DeployActionException("Could not update metadata.", e);
-        }
     }
 
 }

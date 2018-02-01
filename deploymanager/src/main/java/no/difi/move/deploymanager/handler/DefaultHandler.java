@@ -31,6 +31,7 @@ public class DefaultHandler implements AbstractHandler {
                 .andThen(new CheckHealthAction(properties))
                 .andThen(new ShutdownAction(properties))
                 .andThen(new StartAction(properties))
+                .andThen(new UpdateMetadataAction(properties))
                 .apply(new Application());
         log.debug("Finished synchronization.");
     }
