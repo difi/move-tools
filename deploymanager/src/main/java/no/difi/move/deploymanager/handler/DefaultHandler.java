@@ -36,7 +36,8 @@ public class DefaultHandler implements AbstractHandler {
                 .andThen(new ValidateAction(properties, nexusRepo))
                 .andThen(new CheckHealthAction(properties))
                 .andThen(new ShutdownAction(properties))
-                .andThen(new StartAction(properties, directoryRepo))
+                .andThen(new StartAction(properties))
+                .andThen(new UpdateMetadataAction(properties, directoryRepo))
                 .apply(new Application());
         log.debug("Finished synchronization.");
     }
