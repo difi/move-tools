@@ -37,18 +37,9 @@ public class StartAction extends AbstractApplicationAction {
         log.info("Start application.");
         try {
             String profile = getProperties().getIntegrasjonspunkt().getProfile();
-            Process exec = Runtime.getRuntime().exec(
-                    "java -jar "
-                            + application.getFile().getAbsolutePath()
-                            + " --endpoints.shutdown.enabled=true"
-                            + " --endpoints.health.enabled=true"
-                            + " --spring.profiles.active=" + profile
-                            + " --app.logger.enableSSL=false",
-                    null,
-                    new File(getProperties().getRoot()));
-
+            String jarPath = application.getFile().getAbsolutePath();
+            Process exec = startProcess(jarPath, profile);
             consumeOutput(exec);
-
             updateMetadata(application);
 
             return application;
@@ -58,16 +49,27 @@ public class StartAction extends AbstractApplicationAction {
         }
     }
 
+    private Process startProcess(String jarPath, String profile) throws IOException {
+        return Runtime.getRuntime().exec(
+                "java -jar "
+                        + jarPath
+                        + " --endpoints.shutdown.enabled=true"
+                        + " --endpoints.health.enabled=true"
+                        + " --spring.profiles.active=" + profile
+                        + " --app.logger.enableSSL=false",
+                null,
+                new File(getProperties().getRoot()));
+    }
+
     private void consumeOutput(Process exec) {
         OutputStream outputStream = getOutputStream(getProperties().isVerbose());
         new Thread(() -> {
             try (InputStream inputStream = exec.getInputStream()) {
                 IOUtils.copy(inputStream, outputStream);
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error(null, e);
             }
-        }
-        ).start();
+        }).start();
     }
 
     private OutputStream getOutputStream(boolean preserveOutput) {
