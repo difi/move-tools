@@ -11,6 +11,8 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Properties;
 
 /**
@@ -45,7 +47,7 @@ public class StartAction extends AbstractApplicationAction {
                     null,
                     new File(getProperties().getRoot()));
 
-            getOutput(exec);
+            consumeOutput(exec);
 
             updateMetadata(application);
 
@@ -56,10 +58,27 @@ public class StartAction extends AbstractApplicationAction {
         }
     }
 
-    private void getOutput(Process exec) throws IOException {
-        if (getProperties().isVerbose()) {
-            IOUtils.copy(exec.getInputStream(), System.out);
+    private void consumeOutput(Process exec) {
+        OutputStream outputStream = getOutputStream(getProperties().isVerbose());
+        new Thread(() -> {
+            try (InputStream inputStream = exec.getInputStream()) {
+                IOUtils.copy(inputStream, outputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+        ).start();
+    }
+
+    private OutputStream getOutputStream(boolean preserveOutput) {
+        return preserveOutput
+                ? System.out
+                : new OutputStream() {
+            @Override
+            public void write(int b) {
+
+            }
+        };
     }
 
     private void updateMetadata(Application application) throws IOException {
