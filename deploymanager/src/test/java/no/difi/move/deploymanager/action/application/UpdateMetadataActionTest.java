@@ -31,12 +31,12 @@ public class UpdateMetadataActionTest {
     @Mock
     private Application applicationMock;
     @Mock
-    private ApplicationMetadata metadataMock;
+    private ApplicationMetadata applicationDataMock;
 
     @Before
     public void setUp() throws Exception {
         when(repoMock.getMetadata()).thenReturn(metaDataMock);
-        when(applicationMock.getLatest()).thenReturn(metadataMock);
+        when(applicationMock.getLatest()).thenReturn(applicationDataMock);
         target = new UpdateMetadataAction(propertiesMock, repoMock);
     }
 
