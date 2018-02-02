@@ -2,18 +2,20 @@ package no.difi.move.deploymanager.action.application;
 
 import no.difi.move.deploymanager.config.DeployManagerProperties;
 import no.difi.move.deploymanager.domain.application.Application;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.IOException;
 import java.net.URL;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({CheckHealthAction.class})
@@ -26,14 +28,14 @@ public class CheckHealthActionTest {
     private final URL urlMock;
 
     public CheckHealthActionTest() {
-        urlMock = PowerMockito.mock(URL.class);
+        urlMock = mock(URL.class);
     }
 
     @Before
     public void setUp() throws Exception {
-        PowerMockito.whenNew(URL.class).withParameterTypes(String.class)
+        whenNew(URL.class).withParameterTypes(String.class)
                 .withArguments(Mockito.anyString()).thenReturn(urlMock);
-        PowerMockito.when(propertiesMock.getHealthURL()).thenReturn(urlMock);
+        when(propertiesMock.getHealthURL()).thenReturn(urlMock);
         target = new CheckHealthAction(propertiesMock);
     }
 
@@ -44,16 +46,16 @@ public class CheckHealthActionTest {
 
     @Test
     public void apply_receivesContentFromUrl_shouldReturnHealthyResult() throws IOException {
-        PowerMockito.when(urlMock.getContent()).thenReturn(Mockito.mock(Object.class));
+        when(urlMock.getContent()).thenReturn(Mockito.mock(Object.class));
         Application result = target.apply(new Application());
-        Assert.assertTrue(result.getHealth());
+        assertTrue(result.getHealth());
     }
 
     @Test
     public void apply_receivesIOException_shouldReturnUnhealthyResult() throws IOException {
-        PowerMockito.when(urlMock.getContent()).thenThrow(new IOException("test exception"));
+        when(urlMock.getContent()).thenThrow(new IOException("test exception"));
         Application result = target.apply(new Application());
-        Assert.assertFalse(result.getHealth());
+        assertFalse(result.getHealth());
     }
 
 }
