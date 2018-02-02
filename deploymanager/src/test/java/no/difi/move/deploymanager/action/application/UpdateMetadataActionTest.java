@@ -59,7 +59,7 @@ public class UpdateMetadataActionTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void apply_invalidApplicationMetadataReceived_shouldThrow() throws IOException {
+    public void apply_invalidApplicationMetadataReceived_shouldThrow() {
         when(applicationMock.getLatest()).thenReturn(null);
         target.apply(applicationMock);
     }
