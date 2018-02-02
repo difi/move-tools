@@ -8,6 +8,7 @@ import no.difi.move.deploymanager.config.DeployManagerProperties;
 import no.difi.move.deploymanager.domain.application.Application;
 import no.difi.move.deploymanager.domain.application.ApplicationMetadata;
 import org.apache.commons.io.IOUtils;
+import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,6 +27,7 @@ public class LatestVersionAction extends AbstractApplicationAction {
     @Override
     public Application apply(Application application) {
         log.debug("Running LatestVersionAction.");
+        Assert.notNull(application, "application");
         log.info("Getting latest version");
 
         try {
@@ -43,7 +45,6 @@ public class LatestVersionAction extends AbstractApplicationAction {
             inputStream.close();
             return application;
         } catch (IOException ex) {
-            log.error(null, ex);
             throw new DeployActionException("Error downloading file", ex);
         }
     }
