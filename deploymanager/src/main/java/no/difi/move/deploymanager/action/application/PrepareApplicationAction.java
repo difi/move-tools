@@ -7,9 +7,9 @@ import no.difi.move.deploymanager.domain.application.Application;
 import no.difi.move.deploymanager.domain.application.predicate.ApplicationVersionPredicate;
 import no.difi.move.deploymanager.repo.NexusRepo;
 import org.apache.commons.io.IOUtils;
+import org.springframework.util.Assert;
 
 import java.io.*;
-import java.util.Properties;
 
 /**
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
@@ -26,23 +26,37 @@ public class PrepareApplicationAction extends AbstractApplicationAction {
 
     public Application apply(Application application) {
         log.debug("Running PrepareApplicationAction.");
+        Assert.notNull(application, "application");
         log.info("Prepare jar.");
-        String root = getProperties().getRoot();
-        File download = new File(root, "integrasjonspunkt-" + application.getLatest().getVersion() + ".jar");
-        if (!(download.exists() && new ApplicationVersionPredicate().test(application))) {
+        File downloadFile = getDownloadFile(application);
+        if (shouldDownload(application, downloadFile)) {
             log.info("Latest is different from current. Downloading newest version.");
             try {
-                try (InputStream is = nexusRepo.getArtifact(application.getLatest().getVersion(), null).openStream();
-                     OutputStream os = new FileOutputStream(download)) {
-                    IOUtils.copy(is, os);
-                }
+                doDownload(application, downloadFile);
             } catch (IOException ex) {
-                log.error(null, ex);
                 throw new DeployActionException("Error getting latest version", ex);
             }
         }
-        application.setFile(download);
+        application.setFile(downloadFile);
         return application;
+    }
+
+    private void doDownload(Application application, File destination) throws IOException {
+        try (InputStream is = nexusRepo.getArtifact(application.getLatest().getVersion(), null).openStream();
+             OutputStream os = new FileOutputStream(destination)) {
+            IOUtils.copy(is, os);
+        }
+    }
+
+    private boolean shouldDownload(Application application, File fileToDownload) {
+        boolean currentIsLatest = new ApplicationVersionPredicate().test(application);
+        return !(fileToDownload.exists() && currentIsLatest);
+    }
+
+    private File getDownloadFile(Application application) {
+        String root = getProperties().getRoot();
+        String latestVersion = application.getLatest().getVersion();
+        return new File(root, "integrasjonspunkt-" + latestVersion + ".jar");
     }
 
 }
