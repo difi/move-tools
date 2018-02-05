@@ -52,22 +52,30 @@ public class PrepareApplicationActionTest {
     public void apply_newVersionFound_shouldDownload() throws Exception {
         when(propertiesMock.getRoot()).thenReturn("");
         Application targetApplication = new Application();
-        setLatestVersionToNew(targetApplication);
-        setCurrentVersionToOlder(targetApplication);
+        mockDownloadFile(false);
+        setLatestVersion(targetApplication, NEW_APPLICATION_VERSION);
+        setCurrentVersion(targetApplication, OLDER_APPLICATION_VERSION);
         doSuccessfulDownload();
 
         Application result = target.apply(targetApplication);
         File resultFile = result.getFile();
         Assert.assertNotNull(resultFile);
-        Assert.assertTrue(resultFile.getAbsolutePath().contains(NEW_APPLICATION_VERSION));
+    }
+
+    private void mockDownloadFile(boolean exists) throws Exception {
+        File fileMock = mock(File.class);
+        when(fileMock.exists()).thenReturn(exists);
+        whenNew(File.class).withParameterTypes(String.class, String.class)
+                .withArguments(Mockito.anyString(), Mockito.anyString())
+                .thenReturn(fileMock);
     }
 
     @Test(expected = DeployActionException.class)
     public void apply_downloadThrows_shouldThrow() throws Exception {
         when(propertiesMock.getRoot()).thenReturn("");
         Application targetApplication = new Application();
-        setLatestVersionToNew(targetApplication);
-        setCurrentVersionToOlder(targetApplication);
+        setLatestVersion(targetApplication, NEW_APPLICATION_VERSION);
+        setCurrentVersion(targetApplication, OLDER_APPLICATION_VERSION);
         getDownloadException();
 
         target.apply(targetApplication);
@@ -93,15 +101,15 @@ public class PrepareApplicationActionTest {
                 .thenThrow(new MalformedURLException("test download exception"));
     }
 
-    private void setLatestVersionToNew(Application targetApplication) {
+    private void setLatestVersion(Application targetApplication, String version) {
         ApplicationMetadata latestMetadataMock = PowerMockito.mock(ApplicationMetadata.class);
-        when(latestMetadataMock.getVersion()).thenReturn(NEW_APPLICATION_VERSION);
+        when(latestMetadataMock.getVersion()).thenReturn(version);
         targetApplication.setLatest(latestMetadataMock);
     }
 
-    private void setCurrentVersionToOlder(Application targetApplication) {
+    private void setCurrentVersion(Application targetApplication, String version) {
         ApplicationMetadata currentMetadataMock = PowerMockito.mock(ApplicationMetadata.class);
-        when(currentMetadataMock.getVersion()).thenReturn(OLDER_APPLICATION_VERSION);
+        when(currentMetadataMock.getVersion()).thenReturn(version);
         targetApplication.setCurrent(currentMetadataMock);
     }
 }
