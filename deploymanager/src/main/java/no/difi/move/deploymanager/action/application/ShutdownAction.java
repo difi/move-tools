@@ -5,6 +5,7 @@ import no.difi.move.deploymanager.config.DeployManagerProperties;
 import no.difi.move.deploymanager.domain.application.Application;
 import no.difi.move.deploymanager.domain.application.predicate.ApplicationHealthPredicate;
 import no.difi.move.deploymanager.domain.application.predicate.ApplicationVersionPredicate;
+import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -21,19 +22,28 @@ public class ShutdownAction extends AbstractApplicationAction {
 
     @Override
     public Application apply(Application application) {
+        Assert.notNull(application, "application");
         log.debug("Running ShutdownAction.");
-        if (new ApplicationVersionPredicate().or(new ApplicationHealthPredicate().negate()).test(application)) {
-            return application;
+        if (needToShutdown(application)) {
+            doShutdown();
         }
-        log.info("Shutdown running version.");
+
+        return application;
+    }
+
+    private boolean needToShutdown(Application application) {
+        return new ApplicationVersionPredicate().negate().and(new ApplicationHealthPredicate()).test(application);
+    }
+
+    private void doShutdown() {
         try {
+            log.info("Shutdown running version.");
             HttpURLConnection connection = (HttpURLConnection) getProperties().getShutdownURL().openConnection();
             connection.setRequestMethod("POST");
             connection.getContent();
         } catch (IOException ex) {
             log.error(null, ex);
         }
-        return application;
     }
 
 }
