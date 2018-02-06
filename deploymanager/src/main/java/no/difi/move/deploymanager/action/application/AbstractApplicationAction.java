@@ -5,6 +5,8 @@ import no.difi.move.deploymanager.action.AbstractAction;
 import no.difi.move.deploymanager.config.DeployManagerProperties;
 import no.difi.move.deploymanager.domain.application.Application;
 
+import java.util.Objects;
+
 /**
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
  */
@@ -14,7 +16,7 @@ public abstract class AbstractApplicationAction implements AbstractAction<Applic
     private final DeployManagerProperties properties;
 
     public AbstractApplicationAction(DeployManagerProperties properties) {
-        this.properties = properties;
+        this.properties = Objects.requireNonNull(properties);
     }
 
 }
