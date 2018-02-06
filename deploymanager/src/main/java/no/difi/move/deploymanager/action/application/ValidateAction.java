@@ -35,10 +35,10 @@ public class ValidateAction extends AbstractApplicationAction {
         log.debug("Running ValidateAction.");
         log.info("Validating jar.");
         try {
-            if (!verifyChecksum(application.getFile(), application.getLatest().getVersion(), ALGORITHM.SHA1)) {
+            if (!verifyChecksum(application, ALGORITHM.SHA1)) {
                 throw new DeployActionException("SHA-1 verification failed");
             }
-            if (!verifyChecksum(application.getFile(), application.getLatest().getVersion(), ALGORITHM.MD5)) {
+            if (!verifyChecksum(application, ALGORITHM.MD5)) {
                 throw new DeployActionException("MD-5 verification failed");
             }
             return application;
@@ -47,20 +47,26 @@ public class ValidateAction extends AbstractApplicationAction {
         }
     }
 
-    private boolean verifyChecksum(File file, String version, ALGORITHM algorithm) throws IOException, NoSuchAlgorithmException {
+    private boolean verifyChecksum(Application application, ALGORITHM algorithm) throws IOException, NoSuchAlgorithmException {
+        byte[] hashFromRepo = getHashFromRepo(application.getLatest().getVersion(), algorithm);
+        byte[] fileHash = getFileHash(application.getFile(), algorithm);
+        return MessageDigest.isEqual(fileHash, hashFromRepo);
+    }
+
+    private byte[] getFileHash(File file, ALGORITHM algorithm) throws IOException, NoSuchAlgorithmException {
         byte[] buffer = new byte[8192];
         MessageDigest instance = MessageDigest.getInstance(algorithm.getName());
-
-        try (
-                InputStream is = nexusRepo.getArtifact(version, "jar." + algorithm.getFileNameSuffix()).openStream();
-                StringWriter os = new StringWriter();
-                DigestInputStream digestInputStream = new DigestInputStream(new FileInputStream(file), instance)) {
-
-            IOUtils.copy(is, os, Charset.defaultCharset());
-
+        try (DigestInputStream digestInputStream = new DigestInputStream(new FileInputStream(file), instance)) {
             while (digestInputStream.read(buffer) != -1) ;
+            return instance.digest();
+        }
+    }
 
-            return MessageDigest.isEqual(instance.digest(), ByteArrayUtil.hexStringToByteArray(os.toString()));
+    private byte[] getHashFromRepo(String applicationVersion, ALGORITHM algorithm) throws IOException {
+        try (InputStream is = nexusRepo.getArtifact(applicationVersion, "jar." + algorithm.getFileNameSuffix()).openStream();
+             StringWriter os = new StringWriter()) {
+            IOUtils.copy(is, os, Charset.defaultCharset());
+            return ByteArrayUtil.hexStringToByteArray(os.toString());
         }
     }
 

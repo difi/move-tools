@@ -7,6 +7,7 @@ import no.difi.move.deploymanager.domain.application.Application;
 import no.difi.move.deploymanager.domain.application.ApplicationMetadata;
 import no.difi.move.deploymanager.repo.NexusRepo;
 import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -62,8 +63,8 @@ public class ValidateActionTest {
     @Test(expected = DeployActionException.class)
     public void apply_NoSuchAlgorithmExceptionCaught_shouldThrow() throws Exception {
         Application input = mockInputApplication();
+        mockInputStream();
         mockStatic(MessageDigest.class);
-        MessageDigest digestMock = mock(MessageDigest.class);
         when(MessageDigest.getInstance(Mockito.anyString())).thenThrow(new NoSuchAlgorithmException("test exception"));
         target.apply(input);
     }
@@ -72,7 +73,8 @@ public class ValidateActionTest {
     public void apply_verificationSucceeds_shouldSucceed() throws Exception {
         Application input = mockInputApplication();
         mockVerifyChecksum(true);
-        target.apply(input);
+        Application result = target.apply(input);
+        Assert.assertNotNull(result);
     }
 
     private Application mockInputApplication() {
