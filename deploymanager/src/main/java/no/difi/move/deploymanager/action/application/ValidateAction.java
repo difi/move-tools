@@ -14,6 +14,7 @@ import java.nio.charset.Charset;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 
 /**
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
@@ -25,7 +26,7 @@ public class ValidateAction extends AbstractApplicationAction {
 
     public ValidateAction(DeployManagerProperties properties, NexusRepo nexusRepo) {
         super(properties);
-        this.nexusRepo = nexusRepo;
+        this.nexusRepo = Objects.requireNonNull(nexusRepo);
     }
 
     @Override
