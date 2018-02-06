@@ -1,9 +1,11 @@
 package no.difi.move.deploymanager.repo;
 
 import no.difi.move.deploymanager.config.DeployManagerProperties;
+import org.springframework.util.Assert;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -14,11 +16,13 @@ public class NexusRepo {
     private final DeployManagerProperties properties;
 
     public NexusRepo(DeployManagerProperties properties) {
-        this.properties = properties;
+        this.properties = Objects.requireNonNull(properties);
     }
 
     public URL getArtifact(String version, String classifier)
             throws MalformedURLException {
+        Assert.notNull(version, "version");
+
         StringBuilder url = new StringBuilder();
         url.append(properties.getNexus());
         url.append("/service/local/artifact/maven/content?");

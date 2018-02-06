@@ -8,6 +8,7 @@ import no.difi.move.deploymanager.domain.application.ApplicationMetadata;
 import no.difi.move.deploymanager.repo.DeployDirectoryRepo;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Properties;
 
 @Slf4j
@@ -17,7 +18,7 @@ public class UpdateMetadataAction extends AbstractApplicationAction {
 
     public UpdateMetadataAction(DeployManagerProperties properties, DeployDirectoryRepo directoryRepo) {
         super(properties);
-        this.directoryRepo = directoryRepo;
+        this.directoryRepo = Objects.requireNonNull(directoryRepo);
     }
 
     @Override

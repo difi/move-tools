@@ -1,16 +1,12 @@
 package no.difi.move.deploymanager.repo;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-import no.difi.move.deploymanager.DeployManagerMain;
 import no.difi.move.deploymanager.config.DeployManagerProperties;
 
+import java.io.*;
+import java.util.Objects;
+import java.util.Properties;
+
 /**
- *
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
  */
 public class DeployDirectoryRepo {
@@ -18,7 +14,7 @@ public class DeployDirectoryRepo {
     private final DeployManagerProperties properties;
 
     public DeployDirectoryRepo(DeployManagerProperties properties) {
-        this.properties = properties;
+        this.properties = Objects.requireNonNull(properties);
     }
 
     public Properties getMetadata() throws IOException {
