@@ -6,8 +6,8 @@ import no.difi.move.deploymanager.action.DeployActionException;
 import no.difi.move.deploymanager.config.DeployManagerProperties;
 import no.difi.move.deploymanager.domain.application.Application;
 import no.difi.move.deploymanager.repo.NexusRepo;
-import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
+import org.springframework.util.Assert;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -30,6 +30,7 @@ public class ValidateAction extends AbstractApplicationAction {
 
     @Override
     public Application apply(Application application) {
+        Assert.notNull(application, "application");
         log.debug("Running ValidateAction.");
         log.info("Validating jar.");
         try {
@@ -41,19 +42,18 @@ public class ValidateAction extends AbstractApplicationAction {
             }
             return application;
         } catch (IOException | NoSuchAlgorithmException ex) {
-            log.error(null, ex);
             throw new DeployActionException("Error validating jar", ex);
         }
     }
 
     private boolean verifyChecksum(File file, String version, ALGORITHM algorithm) throws IOException, NoSuchAlgorithmException {
         byte[] buffer = new byte[8192];
-        MessageDigest instance = MessageDigest.getInstance(algorithm.getJava());
+        MessageDigest instance = MessageDigest.getInstance(algorithm.getName());
 
         try (
-                InputStream is = nexusRepo.getArtifact(version, "jar." + algorithm.getSuffix()).openStream();
+                InputStream is = nexusRepo.getArtifact(version, "jar." + algorithm.getFileNameSuffix()).openStream();
                 StringWriter os = new StringWriter();
-                DigestInputStream digestInputStream = new DigestInputStream(new FileInputStream(file), instance);) {
+                DigestInputStream digestInputStream = new DigestInputStream(new FileInputStream(file), instance)) {
 
             IOUtils.copy(is, os, Charset.defaultCharset());
 
@@ -67,20 +67,20 @@ public class ValidateAction extends AbstractApplicationAction {
         MD5("MD5", "md5"),
         SHA1("SHA-1", "sha1");
 
-        private final String java;
-        private final String suffix;
+        private final String name;
+        private final String fileNameSuffix;
 
-        private ALGORITHM(String java, String suffix) {
-            this.java = java;
-            this.suffix = suffix;
+        private ALGORITHM(String name, String fileNameSuffix) {
+            this.name = name;
+            this.fileNameSuffix = fileNameSuffix;
         }
 
-        public String getJava() {
-            return java;
+        public String getName() {
+            return name;
         }
 
-        public String getSuffix() {
-            return suffix;
+        public String getFileNameSuffix() {
+            return fileNameSuffix;
         }
     }
 }
