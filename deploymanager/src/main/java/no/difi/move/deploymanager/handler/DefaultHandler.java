@@ -9,6 +9,8 @@ import no.difi.move.deploymanager.repo.NexusRepo;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
+
 /**
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
  */
@@ -20,10 +22,10 @@ public class DefaultHandler implements AbstractHandler {
     private DeployDirectoryRepo directoryRepo;
     private NexusRepo nexusRepo;
 
-    public DefaultHandler(DeployManagerProperties properties, DeployDirectoryRepo repo, NexusRepo nexusRepo) {
-        this.properties = properties;
-        this.directoryRepo = repo;
-        this.nexusRepo = nexusRepo;
+    public DefaultHandler(DeployManagerProperties properties, DeployDirectoryRepo deployRepo, NexusRepo nexusRepo) {
+        this.properties = Objects.requireNonNull(properties);
+        this.directoryRepo = Objects.requireNonNull(deployRepo);
+        this.nexusRepo = Objects.requireNonNull(nexusRepo);
     }
 
     @Override

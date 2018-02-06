@@ -9,6 +9,7 @@ import no.difi.move.deploymanager.repo.DeployDirectoryRepo;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Properties;
 
 /**
@@ -21,7 +22,7 @@ public class GetCurrentVersionAction extends AbstractApplicationAction {
 
     public GetCurrentVersionAction(DeployManagerProperties properties, DeployDirectoryRepo directoryRepo) {
         super(properties);
-        this.directoryRepo = directoryRepo;
+        this.directoryRepo = Objects.requireNonNull(directoryRepo);
     }
 
     @Override

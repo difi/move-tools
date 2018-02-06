@@ -6,6 +6,8 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
+
 /**
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
  */
@@ -15,7 +17,7 @@ public class EnvironmentCommand implements AbstractCommand {
     private DeployManagerProperties properties;
 
     public EnvironmentCommand(DeployManagerProperties properties) {
-        this.properties = properties;
+        this.properties = Objects.requireNonNull(properties);
     }
 
     @Override

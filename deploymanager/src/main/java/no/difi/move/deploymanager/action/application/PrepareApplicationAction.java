@@ -10,6 +10,7 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.util.Assert;
 
 import java.io.*;
+import java.util.Objects;
 
 /**
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
@@ -21,7 +22,7 @@ public class PrepareApplicationAction extends AbstractApplicationAction {
 
     public PrepareApplicationAction(DeployManagerProperties properties, NexusRepo nexusRepo) {
         super(properties);
-        this.nexusRepo = nexusRepo;
+        this.nexusRepo = Objects.requireNonNull(nexusRepo);
     }
 
     public Application apply(Application application) {
