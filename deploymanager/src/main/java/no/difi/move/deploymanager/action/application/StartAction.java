@@ -49,15 +49,13 @@ public class StartAction extends AbstractApplicationAction {
     private Process startProcess(String jarPath, String activeProfile) {
         try {
             log.info("Starting application.");
-            return Runtime.getRuntime().exec(
-                    "java -jar "
-                            + jarPath
-                            + " --endpoints.shutdown.enabled=true"
-                            + " --endpoints.health.enabled=true"
-                            + " --spring.profiles.active=" + activeProfile
-                            + " --app.logger.enableSSL=false",
-                    null,
-                    new File(getProperties().getRoot()));
+            ProcessBuilder procBuilder = new ProcessBuilder(
+                    "java", "-jar " + jarPath,
+                    " --endpoints.shutdown.enabled=true --endpoints.health.enabled=true",
+                    " --spring.profiles.active=" + activeProfile,
+                    " --app.logger.enableSSL=false")
+                    .directory(new File(getProperties().getRoot()));
+            return procBuilder.start();
         } catch (IOException e) {
             throw new DeployActionException("Failed to start process.", e);
         }
