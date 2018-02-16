@@ -6,6 +6,7 @@ import no.difi.move.deploymanager.config.DeployManagerProperties;
 import no.difi.move.deploymanager.domain.application.Application;
 import no.difi.move.deploymanager.repo.DeployDirectoryRepo;
 import no.difi.move.deploymanager.repo.NexusRepo;
+import no.difi.move.deploymanager.util.ProcessIdFinder;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -21,11 +22,13 @@ public class DefaultHandler implements AbstractHandler {
     private DeployManagerProperties properties;
     private DeployDirectoryRepo directoryRepo;
     private NexusRepo nexusRepo;
+    private ProcessIdFinder processIdFinder;
 
-    public DefaultHandler(DeployManagerProperties properties, DeployDirectoryRepo deployRepo, NexusRepo nexusRepo) {
+    public DefaultHandler(DeployManagerProperties properties, DeployDirectoryRepo deployRepo, NexusRepo nexusRepo, ProcessIdFinder processIdFinder) {
         this.properties = Objects.requireNonNull(properties);
         this.directoryRepo = Objects.requireNonNull(deployRepo);
         this.nexusRepo = Objects.requireNonNull(nexusRepo);
+        this.processIdFinder = Objects.requireNonNull(processIdFinder);
     }
 
     @Override
@@ -38,6 +41,7 @@ public class DefaultHandler implements AbstractHandler {
                 .andThen(new ValidateAction(properties, nexusRepo))
                 .andThen(new CheckHealthAction(properties))
                 .andThen(new ShutdownAction(properties))
+                .andThen(new DestroyProcessAction(properties, processIdFinder))
                 .andThen(new StartAction(properties))
                 .andThen(new UpdateMetadataAction(properties, directoryRepo))
                 .apply(new Application());
