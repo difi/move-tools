@@ -30,7 +30,7 @@ public class DestroyProcessAction extends AbstractApplicationAction {
         log.debug("Running DestroyProcessAction");
 
         List<String> processIds = processIdFinder.getPids(application.getFile().getName());
-        if (!processIds.isEmpty() && new ApplicationHealthPredicate().negate().test(application)) {
+        if (new ApplicationHealthPredicate().negate().test(application)) {
             processIds.forEach(p -> {
                 int pid = Integer.parseInt(p);
                 doDestroyProcess(pid);
@@ -41,7 +41,7 @@ public class DestroyProcessAction extends AbstractApplicationAction {
     }
 
     private void doDestroyProcess(int pid) {
-        log.info("Removing legacy process {}.", pid);
+        log.info("Removing stalled legacy process {}.", pid);
         try {
             PidProcess process = Processes.newPidProcess(pid);
             if (process.isAlive()) {
@@ -54,6 +54,5 @@ public class DestroyProcessAction extends AbstractApplicationAction {
             log.error("Destruction of process {} was interrupted", pid, e);
         }
     }
-
 
 }

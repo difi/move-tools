@@ -15,7 +15,7 @@ public class JpsProcessIdFinder implements ProcessIdFinder {
 
     @Override
     public List<String> getPids(String fileName) {
-
+        Assert.notNull(fileName, "fileName");
         List<String> fileProcesses = new ArrayList<>();
         try {
             Process jpsProcess = Runtime.getRuntime().exec("jps.exe -l");
@@ -37,7 +37,6 @@ public class JpsProcessIdFinder implements ProcessIdFinder {
     }
 
     private String parsePid(String jpsOutputLine) {
-        Assert.notNull(jpsOutputLine, "jpsOutputLine");
         return jpsOutputLine.split("\\s+")[0];
     }
 }
