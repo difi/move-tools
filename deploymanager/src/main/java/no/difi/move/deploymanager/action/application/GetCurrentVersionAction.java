@@ -6,7 +6,6 @@ import no.difi.move.deploymanager.config.DeployManagerProperties;
 import no.difi.move.deploymanager.domain.application.Application;
 import no.difi.move.deploymanager.domain.application.ApplicationMetadata;
 import no.difi.move.deploymanager.repo.DeployDirectoryRepo;
-import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -26,18 +25,18 @@ public class GetCurrentVersionAction extends AbstractApplicationAction {
     }
 
     @Override
-    public Application apply(Application t) {
+    public Application apply(Application application) {
+        Objects.requireNonNull(application);
         log.debug("Running GetCurrentVersionAction.");
-        Assert.notNull(t, "application");
-        log.info("Getting current version");
         try {
+            log.info("Getting current version");
             Properties metadata = getDeployDirectoryMetadata();
-            t.setCurrent(ApplicationMetadata.builder().version(metadata.getProperty("version", "none")).build());
+            application.setCurrent(ApplicationMetadata.builder().version(metadata.getProperty("version", "none")).build());
         } catch (IOException ex) {
             log.error(null, ex);
             throw new DeployActionException("Failed to get current version", ex);
         }
-        return t;
+        return application;
     }
 
     private Properties getDeployDirectoryMetadata() throws IOException {

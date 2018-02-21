@@ -40,6 +40,11 @@ public class UpdateMetadataActionTest {
         target = new UpdateMetadataAction(propertiesMock, repoMock);
     }
 
+    @Test(expected = NullPointerException.class)
+    public void apply_toNull_shouldThrow() {
+        target.apply(null);
+    }
+
     @Test
     public void apply_successful_shouldSetMetadata() throws IOException {
         target.apply(applicationMock);
