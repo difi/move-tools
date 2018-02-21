@@ -43,7 +43,7 @@ public class PrepareApplicationActionTest {
         target = new PrepareApplicationAction(propertiesMock, nexusRepoMock);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = NullPointerException.class)
     public void apply_toNull_shouldThrow() {
         target.apply(null);
     }

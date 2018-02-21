@@ -42,7 +42,7 @@ public class ShutdownActionTest {
         target = new ShutdownAction(propertiesMock);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = NullPointerException.class)
     public void apply_applicationArgumentIsNull_shouldThrow() {
         target.apply(null);
     }

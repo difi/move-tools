@@ -26,9 +26,9 @@ public class PrepareApplicationAction extends AbstractApplicationAction {
     }
 
     public Application apply(Application application) {
+        Objects.requireNonNull(application);
         log.debug("Running PrepareApplicationAction.");
-        Assert.notNull(application, "application");
-        log.info("Prepare jar.");
+        log.info("Preparing application.");
         File downloadFile = getDownloadFile(application);
         if (shouldDownload(application, downloadFile)) {
             log.info("Latest is different from current. Downloading newest version.");

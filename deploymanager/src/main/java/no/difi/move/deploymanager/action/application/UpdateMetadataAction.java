@@ -23,11 +23,11 @@ public class UpdateMetadataAction extends AbstractApplicationAction {
 
     @Override
     public Application apply(Application application) {
+        Objects.requireNonNull(application);
         log.debug("Running UpdateMetadataAction");
         try {
             ApplicationMetadata applicationMetadata = getApplicationMetadata(application);
             Properties directoryProperties = getDirectoryProperties();
-
             directoryProperties.setProperty("version", applicationMetadata.getVersion());
             if (application.getLatest().getSha1() != null) {
                 directoryProperties.setProperty("sha1", applicationMetadata.getSha1());

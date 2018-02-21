@@ -7,7 +7,6 @@ import no.difi.move.deploymanager.config.DeployManagerProperties;
 import no.difi.move.deploymanager.domain.application.Application;
 import no.difi.move.deploymanager.repo.NexusRepo;
 import org.apache.commons.io.IOUtils;
-import org.springframework.util.Assert;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -31,10 +30,10 @@ public class ValidateAction extends AbstractApplicationAction {
 
     @Override
     public Application apply(Application application) {
-        Assert.notNull(application, "application");
+        Objects.requireNonNull(application);
         log.debug("Running ValidateAction.");
-        log.info("Validating jar.");
         try {
+            log.info("Validating jar.");
             if (!verifyChecksum(application, ALGORITHM.SHA1)) {
                 throw new DeployActionException("SHA-1 verification failed");
             }
