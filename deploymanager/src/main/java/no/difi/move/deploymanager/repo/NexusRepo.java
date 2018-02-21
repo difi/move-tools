@@ -22,7 +22,6 @@ public class NexusRepo {
     public URL getArtifact(String version, String classifier)
             throws MalformedURLException {
         Assert.notNull(version, "version");
-        Assert.notNull(classifier, "classifier");
 
         StringBuilder url = new StringBuilder();
         url.append(properties.getNexus());

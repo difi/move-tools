@@ -9,6 +9,7 @@ import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.Objects;
 
 /**
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
@@ -22,7 +23,7 @@ public class ShutdownAction extends AbstractApplicationAction {
 
     @Override
     public Application apply(Application application) {
-        Assert.notNull(application, "application");
+        Objects.requireNonNull(application);
         log.debug("Running ShutdownAction.");
         if (needToShutdown(application)) {
             doShutdown();

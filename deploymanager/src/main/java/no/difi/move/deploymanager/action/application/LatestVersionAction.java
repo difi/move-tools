@@ -13,6 +13,7 @@ import org.springframework.util.Assert;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLConnection;
+import java.util.Objects;
 
 /**
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
@@ -26,11 +27,10 @@ public class LatestVersionAction extends AbstractApplicationAction {
 
     @Override
     public Application apply(Application application) {
+        Objects.requireNonNull(application);
         log.debug("Running LatestVersionAction.");
-        Assert.notNull(application, "application");
-        log.info("Getting latest version");
-
         try {
+            log.info("Getting latest version");
             URLConnection connection = getProperties().getNexusProxyURL().openConnection();
             InputStream inputStream = connection.getInputStream();
             String result = IOUtils.toString(inputStream, connection.getContentEncoding());

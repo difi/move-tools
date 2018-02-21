@@ -5,6 +5,6 @@ package no.difi.move.deploymanager.handler;
  */
 public interface AbstractHandler {
 
-    public void run();
+    void run();
 
 }

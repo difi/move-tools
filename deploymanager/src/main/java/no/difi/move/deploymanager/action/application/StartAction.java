@@ -7,12 +7,12 @@ import no.difi.move.deploymanager.domain.application.Application;
 import no.difi.move.deploymanager.domain.application.predicate.ApplicationHealthPredicate;
 import no.difi.move.deploymanager.domain.application.predicate.ApplicationVersionPredicate;
 import org.apache.commons.io.IOUtils;
-import org.springframework.util.Assert;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Objects;
 
 /**
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
@@ -26,7 +26,7 @@ public class StartAction extends AbstractApplicationAction {
 
     @Override
     public Application apply(Application application) {
-        Assert.notNull(application, "application");
+        Objects.requireNonNull(application);
 
         log.debug("Running StartAction.");
         if (isAlreadyRunning(application)) {

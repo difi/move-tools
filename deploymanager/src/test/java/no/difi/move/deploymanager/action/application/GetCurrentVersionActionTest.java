@@ -34,7 +34,7 @@ public class GetCurrentVersionActionTest {
         target = new GetCurrentVersionAction(propertiesMock, repoMock);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = NullPointerException.class)
     public void apply_calledOnNull_shouldThrow() {
         target.apply(null);
     }
