@@ -18,7 +18,7 @@ public class JpsProcessIdFinder implements ProcessIdFinder {
         Assert.notNull(fileName, "fileName");
         List<String> fileProcesses = new ArrayList<>();
         try {
-            Process jpsProcess = Runtime.getRuntime().exec("jps.exe -l");
+            Process jpsProcess = new ProcessBuilder("jps.exe", "-l").start();
             IOUtils.readLines(jpsProcess.getInputStream(), Charset.defaultCharset())
                     .forEach(line ->
                     {
