@@ -37,7 +37,9 @@ public class StartAction extends AbstractApplicationAction {
         String startupProfile = getProperties().getIntegrasjonspunkt().getProfile();
         String jarPath = application.getFile().getAbsolutePath();
         Process exec = startProcess(jarPath, startupProfile);
-        consumeOutput(exec);
+        if (getProperties().isVerbose()) {
+            redirectInput(exec);
+        }
 
         return application;
     }
@@ -49,22 +51,19 @@ public class StartAction extends AbstractApplicationAction {
     private Process startProcess(String jarPath, String activeProfile) {
         try {
             log.info("Starting application.");
-            return Runtime.getRuntime().exec(
-                    "java -jar "
-                            + jarPath
-                            + " --endpoints.shutdown.enabled=true"
-                            + " --endpoints.health.enabled=true"
-                            + " --spring.profiles.active=" + activeProfile
-                            + " --app.logger.enableSSL=false",
-                    null,
-                    new File(getProperties().getRoot()));
+            ProcessBuilder procBuilder = new ProcessBuilder(
+                    "java", "-jar", jarPath,
+                    " --endpoints.shutdown.enabled=true --endpoints.health.enabled=true --app.logger.enableSSL=false",
+                    " --spring.profiles.active=" + activeProfile)
+                    .directory(new File(getProperties().getRoot()));
+            return procBuilder.start();
         } catch (IOException e) {
             throw new DeployActionException("Failed to start process.", e);
         }
     }
 
-    private void consumeOutput(Process exec) {
-        OutputStream outputStream = getOutputStream(getProperties().isVerbose());
+    private void redirectInput(Process exec) {
+        OutputStream outputStream = System.out;
         new Thread(() -> {
             try (InputStream inputStream = exec.getInputStream()) {
                 IOUtils.copy(inputStream, outputStream);
@@ -72,17 +71,6 @@ public class StartAction extends AbstractApplicationAction {
                 throw new DeployActionException("Could not consume output stream.", e);
             }
         }).start();
-    }
-
-    private OutputStream getOutputStream(boolean preserveOutput) {
-        return preserveOutput
-                ? System.out
-                : new OutputStream() {
-            @Override
-            public void write(int b) {
-
-            }
-        };
     }
 
 }
