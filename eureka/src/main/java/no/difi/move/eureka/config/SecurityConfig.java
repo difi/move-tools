@@ -16,7 +16,9 @@ public class SecurityConfig extends ResourceServerConfigurerAdapter {
     public void configure(HttpSecurity http) throws Exception {
         http.
                 requestMatchers().antMatchers("/config/**")
-                .and().authorizeRequests().antMatchers(HttpMethod.GET, "/config/**").access("#oauth2.hasScope('move/config.read') or hasIpAddress('127.0.0.1')");
+             .and().authorizeRequests().antMatchers(HttpMethod.GET, "/config/**").access("#oauth2.hasScope('move/config.read') or hasIpAddress('127.0.0.1')");
+
+
     }
 
 }

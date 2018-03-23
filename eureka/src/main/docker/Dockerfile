@@ -1,34 +1,19 @@
-FROM openjdk:8-jre-alpine
-MAINTAINER DIFI <espen.korra@difi.no>
+FROM openjdk:10-slim
 
-LABEL package="no.difi" artifact="eureka" version="1.0" description="Direktoratet for forvaltning og IKT (Difi)"
+MAINTAINER DIFI <idporten@difi.no>
 
-#
-# Open ports for incoming connections
-#
+LABEL package="no.difi.move" artifact="eureka" version="1.0" description="Direktoratet for forvaltning og IKT (Difi)"
 
 EXPOSE 8761
 
-#
-# Install application
-#
+WORKDIR /application
 
-ENV APP_DIR=/var/lib/difi \
-    APP_JAVA_PARAMS="-Xmx1g"
+ENTRYPOINT exec java $JAVA_OPTS -jar app.jar
 
-RUN apk add --update \
-        curl \
-        tini && \
-	rm -rf /var/cache/apk/*
+ENV JAVA_OPTS="--add-modules java.xml.bind"
 
-#
-# Start the application
-#
+HEALTHCHECK CMD curl -s --fail http://localhost:8081/manage/health > /dev/null || exit 1
 
-WORKDIR ${APP_DIR}
+RUN apt-get -qq update && apt-get install -qq curl && apt-get -qq clean
 
-
-ENTRYPOINT ["/sbin/tini", "-g", "--", "java", "-jar", "app.jar"]
-
-ADD *.jar ${APP_DIR}/app.jar
-HEALTHCHECK CMD curl -s --fail http://localhost:8761/discovery/manage/health > /dev/null || exit 1
+COPY *.jar /application/app.jar
