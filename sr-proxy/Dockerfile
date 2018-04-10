@@ -2,7 +2,8 @@ FROM openjdk:8-jdk-alpine
 
 MAINTAINER Johannes Molland <johannes.molland@difi.no>
 
-ADD target/sr-proxy-0.1.0.jar app.jar
+ARG jarPath
+ADD ${jarPath} app.jar
 
 ENV JAVA_OPTS=""
 

@@ -20,6 +20,8 @@
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <docker.image.prefix>difimove2</docker.image.prefix>
+        <docker.related.plugins.skip>false</docker.related.plugins.skip>
+        <dockerfile.maven.plugin.version>1.4.0</dockerfile.maven.plugin.version>
     </properties>
 
     <repositories>
@@ -107,40 +109,25 @@
     </dependencies>
 
     <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <configuration>
-                        <source>1.8</source>
-                        <target>1.8</target>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <!-- Skip deploy:deploy -->
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <version>2.4</version>
                 <configuration>
-                    <skip>true</skip>
+                    <skip>false</skip>
                 </configuration>
             </plugin>
             <plugin>
                 <!-- Integrate docker into lifecycle -->
                 <groupId>com.spotify</groupId>
                 <artifactId>dockerfile-maven-plugin</artifactId>
-                <version>1.3.6</version>
+                <version>${dockerfile.maven.plugin.version}</version>
                 <configuration>
                     <repository>${docker.image.prefix}/${project.artifactId}</repository>
-                    <skip>false</skip>
+                    <buildArgs>
+                        <jarPath>target/${project.build.finalName}.jar</jarPath>
+                    </buildArgs>
+                    <skip>${docker.related.plugins.skip}</skip>
                 </configuration>
                 <executions>
                     <execution>
