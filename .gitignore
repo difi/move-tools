@@ -1,4 +1,4 @@
-./idea/*
+/.idea/
 *.iml
 /*/target/
 /dashboard/dashboard-frontend/target/
