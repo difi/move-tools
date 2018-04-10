@@ -1,6 +1,7 @@
-/eureka/target/
+./idea/*
+*.iml
+/*/target/
 /dashboard/dashboard-frontend/target/
 npm-debug.log
 /dashboard/move-dashboard/target/
 node_modules
-/deploymanager/target/
