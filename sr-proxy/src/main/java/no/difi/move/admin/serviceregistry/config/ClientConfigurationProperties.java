@@ -38,8 +38,6 @@ public class ClientConfigurationProperties {
     @Data
     public static class Oidc {
         @NotNull
-        private boolean enabled;
-        @NotNull
         private String clientId;
         private URL url;
         @NestedConfigurationProperty
