@@ -38,7 +38,6 @@ public class OidcTokenClientTest {
         props.setEndpointURL(new URL("http://localhost:9099/"));
 
         props.setOidc(new ClientConfigurationProperties.Oidc());
-        props.getOidc().setEnabled(true);
         props.getOidc().setUrl(new URL("https://oidc-ver2.difi.no/idporten-oidc-provider/token"));
         props.getOidc().setAudience("https://oidc-ver2.difi.no/idporten-oidc-provider/");
         props.getOidc().setClientId("test_move");

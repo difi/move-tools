@@ -13,7 +13,6 @@ import org.springframework.security.oauth2.client.resource.BaseOAuth2ProtectedRe
 import org.springframework.security.oauth2.client.token.DefaultAccessTokenRequest;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
 import org.springframework.web.client.RestOperations;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -50,18 +49,16 @@ public class ProxyConfiguration {
 
     @Bean
     public RestOperations getRestTemplate(ClientConfigurationProperties properties, OidcTokenClient oidcTokenClient) throws URISyntaxException {
-        if (properties.getOidc().isEnabled()) {
-            DefaultAccessTokenRequest atr = new DefaultAccessTokenRequest();
-            BaseOAuth2ProtectedResourceDetails resource = new BaseOAuth2ProtectedResourceDetails();
-            resource.setAccessTokenUri(String.valueOf(properties.getOidc().getUrl().toURI()));
-            resource.setScope(oidcTokenClient.getScopes());
-            resource.setClientId(properties.getOidc().getClientId());
+        DefaultAccessTokenRequest tokenRequest = new DefaultAccessTokenRequest();
 
-            OAuth2RestTemplate rt = new OAuth2RestTemplate(resource, new DefaultOAuth2ClientContext(atr));
-            rt.setAccessTokenProvider(new OidcAccessTokenProvider(oidcTokenClient));
-            return rt;
-        }
+        BaseOAuth2ProtectedResourceDetails resourceDetails = new BaseOAuth2ProtectedResourceDetails();
+        resourceDetails.setAccessTokenUri(String.valueOf(properties.getOidc().getUrl().toURI()));
+        resourceDetails.setScope(oidcTokenClient.getScopes());
+        resourceDetails.setClientId(properties.getOidc().getClientId());
 
-        return new RestTemplate();
+        OAuth2RestTemplate template = new OAuth2RestTemplate(resourceDetails, new DefaultOAuth2ClientContext(tokenRequest));
+        template.setAccessTokenProvider(new OidcAccessTokenProvider(oidcTokenClient));
+
+        return template;
     }
 }
