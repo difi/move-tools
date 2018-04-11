@@ -10,12 +10,9 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import lombok.extern.slf4j.Slf4j;
 import no.difi.move.admin.serviceregistry.config.ClientConfigurationProperties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.http.converter.FormHttpMessageConverter;
-import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -62,8 +59,7 @@ public class OidcTokenClient {
         try {
             accessTokenUri = properties.getOidc().getUrl().toURI();
         } catch (URISyntaxException e) {
-            log.error("Error converting property to URI", e);
-            throw new RuntimeException(e);
+            throw new IllegalStateException("Error converting property to URI", e);
         }
 
         ResponseEntity<OidcTokenResponse> response = restTemplate.exchange(accessTokenUri, HttpMethod.POST,
@@ -80,8 +76,7 @@ public class OidcTokenClient {
         try {
             certChain.add(Base64.encode(nokkel.getX509Certificate().getEncoded()));
         } catch (CertificateEncodingException e) {
-            log.error("Could not get encoded certificate", e);
-            throw new RuntimeException(e);
+            throw new IllegalStateException("Could not get encoded certificate", e);
         }
 
         JWSHeader jwsHeader = new JWSHeader.Builder(JWSAlgorithm.RS256).x509CertChain(certChain).build();
