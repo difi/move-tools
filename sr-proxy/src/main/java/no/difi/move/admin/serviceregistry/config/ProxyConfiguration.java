@@ -33,7 +33,7 @@ public class ProxyConfiguration {
     }
 
     @Bean
-    ServiceRegistryClient getServiceRegistryClient(RestClient restClient) throws URISyntaxException {
+    ServiceRegistryClient getServiceRegistryClient(RestClient restClient) {
         return new ServiceRegistryClient(restClient);
     }
 
