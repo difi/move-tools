@@ -36,7 +36,7 @@ public class RestClient {
             throws IOException, URISyntaxException, CertificateException {
         this.restTemplate = restTemplate;
         this.baseUrl = clientConfigurationProperties.getEndpointURL().toURI();
-        this.validateSrSignature = clientConfigurationProperties.getSrSignature().isEnabled();
+        this.validateSrSignature = Boolean.parseBoolean(clientConfigurationProperties.getSrSignature().getEnabled());
         this.jwtDecoder = new JWTDecoder();
         this.pk = CertificateFactory.getInstance("X.509")
                 .generateCertificate(clientConfigurationProperties.getSrSignature().getCertificate().getInputStream()).getPublicKey();

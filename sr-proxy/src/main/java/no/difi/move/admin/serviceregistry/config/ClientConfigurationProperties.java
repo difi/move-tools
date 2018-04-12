@@ -30,8 +30,7 @@ public class ClientConfigurationProperties {
     @Data
     public static class SrSignature {
         @NotNull
-        private boolean enabled;
-
+        private String enabled; // This is of type String because of default property reference. (Shared with integrasjonspunkt.)
         private Resource certificate;
     }
 
