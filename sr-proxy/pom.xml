@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>no.difi.move.admin</groupId>
     <artifactId>sr-proxy</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <parent>
