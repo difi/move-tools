@@ -14,6 +14,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
+/***
+ * Takes care of destroying a process that crashed before enabling the shutdown endpoint.
+ */
 @Slf4j
 public class DestroyProcessAction extends AbstractApplicationAction {
 
