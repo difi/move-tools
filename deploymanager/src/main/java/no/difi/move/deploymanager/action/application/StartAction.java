@@ -35,8 +35,8 @@ public class StartAction extends AbstractApplicationAction {
         }
 
         String startupProfile = getProperties().getIntegrasjonspunkt().getProfile();
-        String jarFile = application.getFile().getName();
-        Process exec = startProcess(jarFile, startupProfile);
+        String jarPath = application.getFile().getAbsolutePath();
+        Process exec = startProcess(jarPath, startupProfile);
         if (getProperties().isVerbose()) {
             redirectInput(exec);
         }
@@ -48,11 +48,11 @@ public class StartAction extends AbstractApplicationAction {
         return new ApplicationHealthPredicate().and(new ApplicationVersionPredicate()).test(application);
     }
 
-    private Process startProcess(String jarFile, String activeProfile) {
+    private Process startProcess(String jarPath, String activeProfile) {
         try {
             log.info("Starting application.");
             ProcessBuilder procBuilder = new ProcessBuilder(
-                    "java -jar " + jarFile,
+                    "java", "-jar", jarPath,
                     " --endpoints.shutdown.enabled=true --endpoints.health.enabled=true --app.logger.enableSSL=false",
                     " --spring.profiles.active=" + activeProfile)
                     .directory(new File(getProperties().getRoot()));

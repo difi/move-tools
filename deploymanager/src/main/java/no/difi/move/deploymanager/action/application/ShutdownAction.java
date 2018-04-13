@@ -5,6 +5,7 @@ import no.difi.move.deploymanager.config.DeployManagerProperties;
 import no.difi.move.deploymanager.domain.application.Application;
 import no.difi.move.deploymanager.domain.application.predicate.ApplicationHealthPredicate;
 import no.difi.move.deploymanager.domain.application.predicate.ApplicationVersionPredicate;
+import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -24,14 +25,14 @@ public class ShutdownAction extends AbstractApplicationAction {
     public Application apply(Application application) {
         Objects.requireNonNull(application);
         log.debug("Running ShutdownAction.");
-        if (shouldShutdown(application)) {
+        if (needToShutdown(application)) {
             doShutdown();
         }
 
         return application;
     }
 
-    private boolean shouldShutdown(Application application) {
+    private boolean needToShutdown(Application application) {
         return new ApplicationVersionPredicate().negate().and(new ApplicationHealthPredicate()).test(application);
     }
 
