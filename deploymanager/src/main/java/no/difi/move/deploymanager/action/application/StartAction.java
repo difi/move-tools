@@ -54,6 +54,7 @@ public class StartAction extends AbstractApplicationAction {
             ProcessBuilder procBuilder = new ProcessBuilder(
                     "java", "-jar", jarPath,
                     "--endpoints.shutdown.enabled=true",
+                    "--endpoints.shutdown.sensitive=false",
                     "--endpoints.health.enabled=true",
                     "--app.logger.enableSSL=false",
                     "--spring.profiles.active=" + activeProfile)
