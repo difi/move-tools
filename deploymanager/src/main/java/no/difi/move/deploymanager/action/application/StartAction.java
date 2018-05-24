@@ -37,9 +37,7 @@ public class StartAction extends AbstractApplicationAction {
         String startupProfile = getProperties().getIntegrasjonspunkt().getProfile();
         String jarPath = application.getFile().getAbsolutePath();
         Process exec = startProcess(jarPath, startupProfile);
-        if (getProperties().isVerbose()) {
-            redirectInput(exec);
-        }
+        consumeOutput(exec);
 
         return application;
     }
@@ -65,8 +63,8 @@ public class StartAction extends AbstractApplicationAction {
         }
     }
 
-    private void redirectInput(Process exec) {
-        OutputStream outputStream = System.out;
+    private void consumeOutput(Process exec) {
+        OutputStream outputStream = getOutputStream(getProperties().isVerbose());
         new Thread(() -> {
             try (InputStream inputStream = exec.getInputStream()) {
                 IOUtils.copy(inputStream, outputStream);
@@ -74,6 +72,16 @@ public class StartAction extends AbstractApplicationAction {
                 throw new DeployActionException("Could not consume output stream.", e);
             }
         }).start();
+    }
+
+    private OutputStream getOutputStream(boolean preserveOutput) {
+        return preserveOutput
+                ? System.out
+                : new OutputStream() {
+            @Override
+            public void write(int b) {
+            }
+        };
     }
 
 }
