@@ -54,6 +54,7 @@ public class StartAction extends AbstractApplicationAction {
                     "--endpoints.shutdown.enabled=true",
                     "--endpoints.shutdown.sensitive=false",
                     "--endpoints.health.enabled=true",
+                    "--endpoints.health.sensitive=false",
                     "--app.logger.enableSSL=false",
                     "--spring.profiles.active=" + activeProfile)
                     .directory(new File(getProperties().getRoot()));
