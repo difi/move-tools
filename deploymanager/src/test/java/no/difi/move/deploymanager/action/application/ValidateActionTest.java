@@ -2,15 +2,14 @@ package no.difi.move.deploymanager.action.application;
 
 import ch.qos.logback.core.encoder.ByteArrayUtil;
 import no.difi.move.deploymanager.action.DeployActionException;
-import no.difi.move.deploymanager.config.DeployManagerProperties;
 import no.difi.move.deploymanager.domain.application.Application;
 import no.difi.move.deploymanager.domain.application.ApplicationMetadata;
 import no.difi.move.deploymanager.repo.NexusRepo;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -28,17 +27,9 @@ import static org.powermock.api.mockito.PowerMockito.*;
 @PrepareForTest({ValidateAction.class, IOUtils.class, MessageDigest.class, ByteArrayUtil.class})
 public class ValidateActionTest {
 
-    private ValidateAction target;
+    @InjectMocks private ValidateAction target;
 
-    @Mock
-    private DeployManagerProperties propertiesMock;
-    @Mock
-    private NexusRepo nexusRepoMock;
-
-    @Before
-    public void setUp() {
-        target = new ValidateAction(propertiesMock, nexusRepoMock);
-    }
+    @Mock private NexusRepo nexusRepoMock;
 
     @Test(expected = NullPointerException.class)
     public void apply_toNull_shouldThrow() {
@@ -80,9 +71,9 @@ public class ValidateActionTest {
     private Application mockInputApplication() {
         File fileMock = mock(File.class);
         Application input = new Application();
-        input.setFile(fileMock);
         ApplicationMetadata metadataMock = mock(ApplicationMetadata.class);
         when(metadataMock.getVersion()).thenReturn("version");
+        when(metadataMock.getFile()).thenReturn(fileMock);
         input.setLatest(metadataMock);
         return input;
     }

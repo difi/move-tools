@@ -1,6 +1,5 @@
 package no.difi.move.deploymanager.command;
 
-import no.difi.move.deploymanager.DeployManagerMain;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
@@ -11,14 +10,14 @@ import org.springframework.util.Assert;
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
  */
 @Component
-public class HelpCommand implements AbstractCommand {
+public class HelpCommand implements Command {
 
     @Override
-    public void run(DeployManagerMain config) {
-        Assert.notNull(config, "config");
+    public void run(CommandLine commandLine, Options options) {
+        Assert.notNull(options, "options");
         // automatically generate the help statement
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("deploymanager", config.getOptions());
+        formatter.printHelp("deploymanager", options);
         System.exit(1);
     }
 

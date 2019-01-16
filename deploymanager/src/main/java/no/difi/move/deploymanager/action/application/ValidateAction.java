@@ -1,55 +1,51 @@
 package no.difi.move.deploymanager.action.application;
 
 import ch.qos.logback.core.encoder.ByteArrayUtil;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.difi.move.deploymanager.action.DeployActionException;
-import no.difi.move.deploymanager.config.DeployManagerProperties;
 import no.difi.move.deploymanager.domain.application.Application;
 import no.difi.move.deploymanager.repo.NexusRepo;
 import org.apache.commons.io.IOUtils;
+import org.springframework.stereotype.Component;
 
+import javax.validation.constraints.NotNull;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Objects;
 
 /**
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
  */
+@Component
 @Slf4j
-public class ValidateAction extends AbstractApplicationAction {
+@RequiredArgsConstructor
+public class ValidateAction implements ApplicationAction {
 
     private final NexusRepo nexusRepo;
 
-    public ValidateAction(DeployManagerProperties properties, NexusRepo nexusRepo) {
-        super(properties);
-        this.nexusRepo = Objects.requireNonNull(nexusRepo);
-    }
-
     @Override
-    public Application apply(Application application) {
-        Objects.requireNonNull(application);
+    public Application apply(@NotNull Application application) {
         log.debug("Running ValidateAction.");
         try {
             log.info("Validating jar.");
-            if (!verifyChecksum(application, ALGORITHM.SHA1)) {
-                throw new DeployActionException("SHA-1 verification failed");
-            }
-            if (!verifyChecksum(application, ALGORITHM.MD5)) {
-                throw new DeployActionException("MD-5 verification failed");
-            }
+            assertChecksumIsCorrect(application, ALGORITHM.SHA1);
+            assertChecksumIsCorrect(application, ALGORITHM.MD5);
             return application;
         } catch (IOException | NoSuchAlgorithmException ex) {
             throw new DeployActionException("Error validating jar", ex);
         }
     }
 
-    private boolean verifyChecksum(Application application, ALGORITHM algorithm) throws IOException, NoSuchAlgorithmException {
+    private void assertChecksumIsCorrect(Application application, ALGORITHM algorithm) throws IOException, NoSuchAlgorithmException {
         byte[] hashFromRepo = getHashFromRepo(application.getLatest().getVersion(), algorithm);
-        byte[] fileHash = getFileHash(application.getFile(), algorithm);
-        return MessageDigest.isEqual(fileHash, hashFromRepo);
+        byte[] fileHash = getFileHash(application.getLatest().getFile(), algorithm);
+        if (!MessageDigest.isEqual(fileHash, hashFromRepo)) {
+            throw new DeployActionException(String.format("%s verification failed", algorithm.getName()));
+        }
     }
 
     private byte[] getFileHash(File file, ALGORITHM algorithm) throws IOException, NoSuchAlgorithmException {
@@ -69,24 +65,13 @@ public class ValidateAction extends AbstractApplicationAction {
         }
     }
 
+    @RequiredArgsConstructor
+    @Getter
     private enum ALGORITHM {
         MD5("MD5", "md5"),
         SHA1("SHA-1", "sha1");
 
         private final String name;
         private final String fileNameSuffix;
-
-        private ALGORITHM(String name, String fileNameSuffix) {
-            this.name = name;
-            this.fileNameSuffix = fileNameSuffix;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getFileNameSuffix() {
-            return fileNameSuffix;
-        }
     }
 }

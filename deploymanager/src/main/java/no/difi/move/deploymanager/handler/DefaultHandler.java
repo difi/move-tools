@@ -1,47 +1,42 @@
 package no.difi.move.deploymanager.handler;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.difi.move.deploymanager.action.application.*;
-import no.difi.move.deploymanager.config.DeployManagerProperties;
 import no.difi.move.deploymanager.domain.application.Application;
-import no.difi.move.deploymanager.repo.DeployDirectoryRepo;
-import no.difi.move.deploymanager.repo.NexusRepo;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
-import java.util.Objects;
 
 /**
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class DefaultHandler implements AbstractHandler {
 
-    private DeployManagerProperties properties;
-    private DeployDirectoryRepo directoryRepo;
-    private NexusRepo nexusRepo;
-
-    public DefaultHandler(DeployManagerProperties properties, DeployDirectoryRepo deployRepo, NexusRepo nexusRepo) {
-        this.properties = Objects.requireNonNull(properties);
-        this.directoryRepo = Objects.requireNonNull(deployRepo);
-        this.nexusRepo = Objects.requireNonNull(nexusRepo);
-    }
+    private final GetCurrentVersionAction currentVersionAction;
+    private final LatestVersionAction latestVersionAction;
+    private final PrepareApplicationAction prepareApplicationAction;
+    private final ValidateAction validateAction;
+    private final ShutdownAction shutdownAction;
+    private final StartAction startAction;
+    private final RollbackAction rollbackAction;
+    private final UpdateMetadataAction updateMetadataAction;
 
     @Override
     @Scheduled(fixedRateString = "${deploymanager.schedulerFixedRateInMs}")
     public void run() {
         log.debug("Starting synchronization.");
-        new GetCurrentVersionAction(properties, directoryRepo)
-                .andThen(new LatestVersionAction(properties))
-                .andThen(new PrepareApplicationAction(properties, nexusRepo))
-                .andThen(new ValidateAction(properties, nexusRepo))
-                .andThen(new CheckHealthAction(properties))
-                .andThen(new ShutdownAction(properties))
-                .andThen(new StartAction(properties))
-                .andThen(new UpdateMetadataAction(properties, directoryRepo))
+        currentVersionAction
+                .andThen(latestVersionAction)
+                .andThen(prepareApplicationAction)
+                .andThen(validateAction)
+                .andThen(shutdownAction)
+                .andThen(startAction)
+                .andThen(rollbackAction)
+                .andThen(updateMetadataAction)
                 .apply(new Application());
         log.debug("Finished synchronization.");
     }
-
 }

@@ -1,43 +1,54 @@
 package no.difi.move.deploymanager.action.application;
 
+import lombok.SneakyThrows;
 import no.difi.move.deploymanager.action.DeployActionException;
-import no.difi.move.deploymanager.config.DeployManagerProperties;
 import no.difi.move.deploymanager.domain.application.Application;
 import no.difi.move.deploymanager.domain.application.ApplicationMetadata;
 import no.difi.move.deploymanager.repo.DeployDirectoryRepo;
+import no.difi.move.deploymanager.service.laucher.dto.LaunchResult;
+import no.difi.move.deploymanager.service.laucher.dto.LaunchStatus;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
+import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Java6Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UpdateMetadataActionTest {
 
-    private UpdateMetadataAction target;
+    @InjectMocks private UpdateMetadataAction target;
 
-    @Mock
-    private DeployManagerProperties propertiesMock;
-    @Mock
-    private DeployDirectoryRepo repoMock;
-    @Mock
-    private Properties metaDataMock;
-    @Mock
-    private Application applicationMock;
-    @Mock
-    private ApplicationMetadata applicationDataMock;
+    @Mock private DeployDirectoryRepo repoMock;
+    @Mock private Properties metaDataMock;
+    @Mock private File fileMock;
+
+    private Application application;
 
     @Before
     public void setUp() throws Exception {
-        when(repoMock.getMetadata()).thenReturn(metaDataMock);
-        when(applicationMock.getLatest()).thenReturn(applicationDataMock);
-        target = new UpdateMetadataAction(propertiesMock, repoMock);
+        application = new Application()
+                .setLatest(new ApplicationMetadata()
+                        .setVersion("1.0")
+                        .setSha1("sha1")
+                        .setRepositoryId("staging")
+                        .setFile(fileMock)
+                ).setLaunchResult(new LaunchResult()
+                        .setStatus(LaunchStatus.SUCCESS)
+                );
+
+        given(fileMock.getName()).willReturn("filename.jar");
+        given(repoMock.getMetadata()).willReturn(metaDataMock);
     }
 
     @Test(expected = NullPointerException.class)
@@ -45,33 +56,48 @@ public class UpdateMetadataActionTest {
         target.apply(null);
     }
 
+    @Test(expected = NullPointerException.class)
+    public void apply_whenLatestIsNull_shouldThrow() {
+        application.setLatest(null);
+        target.apply(null);
+    }
+
+    @Test
+    @SneakyThrows(IOException.class)
+    public void apply_whenNullLauchResult_shouldReturn() {
+        application.setLaunchResult(null);
+        assertThat(target.apply(application)).isSameAs(application);
+        verify(repoMock, never()).setMetadata(any());
+    }
+
+    @Test
+    @SneakyThrows(IOException.class)
+    public void apply_whenLauchStatusIsFailure_shouldReturn() {
+        application.getLaunchResult().setStatus(LaunchStatus.FAILED);
+        assertThat(target.apply(application)).isSameAs(application);
+        verify(repoMock, never()).setMetadata(any());
+    }
+
+    @Test
+    @SneakyThrows
+    public void apply_whenSetProperiesFailes_shouldThrow() {
+        IOException exception = new IOException("dummy");
+        doThrow(exception).when(repoMock).setMetadata(any());
+
+        assertThatThrownBy(() -> target.apply(application))
+                .isInstanceOf(DeployActionException.class)
+                .hasMessage("Could not update metadata.")
+                .hasCause(exception);
+    }
+
     @Test
     public void apply_successful_shouldSetMetadata() throws IOException {
-        target.apply(applicationMock);
-        verify(repoMock, Mockito.times(1)).setMetadata(metaDataMock);
-    }
+        assertThat(target.apply(application)).isSameAs(application);
 
-    @Test(expected = DeployActionException.class)
-    public void apply_getMetaDataRaisesIOException_shouldThrow() throws IOException {
-        when(repoMock.getMetadata()).thenThrow(IOException.class);
-        target.apply(applicationMock);
-    }
-
-    @Test(expected = DeployActionException.class)
-    public void apply_setMetaDataRaisesIOException_shouldThrow() throws IOException {
-        doThrow(new IOException()).when(repoMock).setMetadata(metaDataMock);
-        target.apply(applicationMock);
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void apply_invalidApplicationMetadataReceived_shouldThrow() {
-        when(applicationMock.getLatest()).thenReturn(null);
-        target.apply(applicationMock);
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void apply_invalidDirectoryMetadataReceived_shouldThrow() throws IOException {
-        when(repoMock.getMetadata()).thenReturn(null);
-        target.apply(applicationMock);
+        verify(metaDataMock).setProperty("version", "1.0");
+        verify(metaDataMock).setProperty("sha1", "sha1");
+        verify(metaDataMock).setProperty("repositoryId", "staging");
+        verify(metaDataMock).setProperty("filename", "filename.jar");
+        verify(repoMock).setMetadata(metaDataMock);
     }
 }

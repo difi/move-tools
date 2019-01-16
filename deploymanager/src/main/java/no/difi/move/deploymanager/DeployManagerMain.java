@@ -2,11 +2,14 @@ package no.difi.move.deploymanager;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import no.difi.move.deploymanager.command.AbstractCommand;
+import no.difi.move.deploymanager.command.Command;
 import no.difi.move.deploymanager.config.CommandLineOptions;
 import no.difi.move.deploymanager.config.DeployManagerProperties;
 import no.difi.move.deploymanager.config.DeployManagerPropertiesValidator;
-import org.apache.commons.cli.*;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -27,14 +30,14 @@ import java.util.List;
 @EnableConfigurationProperties(DeployManagerProperties.class)
 public class DeployManagerMain implements CommandLineRunner {
 
+    private final List<Command> commands;
     private final DeployManagerProperties deployManagerProperties;
-    private CommandLine commandLine;
-    private Options options;
-    private List<AbstractCommand> commands;
+    private final Options options;
 
-    public DeployManagerMain(List<AbstractCommand> commands, DeployManagerProperties managerProperties) {
+    public DeployManagerMain(List<Command> commands, DeployManagerProperties managerProperties) {
         this.commands = commands;
         this.deployManagerProperties = managerProperties;
+        this.options = CommandLineOptions.options(commands);
     }
 
     @Bean(name = "configurationPropertiesValidator")
@@ -48,26 +51,22 @@ public class DeployManagerMain implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        parseCommands(args);
-        runCommands();
-    }
-
-    private void parseCommands(String[] args) {
-        CommandLineParser parser = new DefaultParser();
-
         try {
-            this.options = CommandLineOptions.options(commands);
-            this.commandLine = parser.parse(this.options, args);
+            CommandLine commandLine = parseCommands(args);
+            runCommands(commandLine);
         } catch (ParseException ex) {
             log.error(null, ex);
             System.exit(1);
         }
     }
 
-    private void runCommands() {
-        commands.stream()
-                .filter((command) -> (command.supports(commandLine)))
-                .forEachOrdered((command) -> command.run(this));
+    private CommandLine parseCommands(String[] args) throws ParseException {
+        return new DefaultParser().parse(this.options, args);
     }
 
+    private void runCommands(CommandLine commandLine) {
+        commands.stream()
+                .filter(command -> command.supports(commandLine))
+                .forEachOrdered(command -> command.run(commandLine, options));
+    }
 }

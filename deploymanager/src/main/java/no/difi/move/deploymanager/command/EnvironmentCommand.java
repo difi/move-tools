@@ -1,28 +1,23 @@
 package no.difi.move.deploymanager.command;
 
-import no.difi.move.deploymanager.DeployManagerMain;
+import lombok.RequiredArgsConstructor;
 import no.difi.move.deploymanager.config.DeployManagerProperties;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.springframework.stereotype.Component;
 
-import java.util.Objects;
-
 /**
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
  */
 @Component
-public class EnvironmentCommand implements AbstractCommand {
+@RequiredArgsConstructor
+public class EnvironmentCommand implements Command {
 
-    private DeployManagerProperties properties;
-
-    public EnvironmentCommand(DeployManagerProperties properties) {
-        this.properties = Objects.requireNonNull(properties);
-    }
+    private final DeployManagerProperties properties;
 
     @Override
-    public void run(DeployManagerMain config) {
-        properties.setEnvironment(config.getCommandLine().getOptionValue("e"));
+    public void run(CommandLine commandLine, Options options) {
+        properties.setEnvironment(commandLine.getOptionValue("e"));
     }
 
     @Override
@@ -34,5 +29,4 @@ public class EnvironmentCommand implements AbstractCommand {
     public void commandLine(Options options) {
         options.addOption("e", "environment", true, "Add environment variables to application");
     }
-
 }

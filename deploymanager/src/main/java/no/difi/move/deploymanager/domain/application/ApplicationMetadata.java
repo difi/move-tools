@@ -1,18 +1,17 @@
 package no.difi.move.deploymanager.domain.application;
 
-import lombok.Builder;
 import lombok.Data;
 
+import java.io.File;
+
 /**
- *
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
  */
 @Data
-@Builder
 public class ApplicationMetadata {
 
-    private final String repositoryId;
-    private final String version;
-    private final String sha1;
-
+    private String repositoryId;
+    private String version;
+    private String sha1;
+    private File file;
 }

@@ -1,28 +1,23 @@
 package no.difi.move.deploymanager.command;
 
-import no.difi.move.deploymanager.DeployManagerMain;
+import lombok.RequiredArgsConstructor;
 import no.difi.move.deploymanager.config.DeployManagerProperties;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import java.util.Objects;
-
 /**
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
  */
 @Component
-public class VerboseCommand implements AbstractCommand {
+@RequiredArgsConstructor
+public class VerboseCommand implements Command {
 
-    private DeployManagerProperties properties;
-
-    public VerboseCommand(DeployManagerProperties properties) {
-        this.properties = Objects.requireNonNull(properties);
-    }
+    private final DeployManagerProperties properties;
 
     @Override
-    public void run(DeployManagerMain config) {
+    public void run(CommandLine commandLine, Options options) {
         properties.setVerbose(true);
     }
 
@@ -37,5 +32,4 @@ public class VerboseCommand implements AbstractCommand {
         Assert.notNull(options, "options");
         options.addOption("v", "verbose", false, "Follow application log.");
     }
-
 }

@@ -1,88 +1,60 @@
 package no.difi.move.deploymanager.action.application;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.difi.move.deploymanager.action.DeployActionException;
-import no.difi.move.deploymanager.config.DeployManagerProperties;
+import no.difi.move.deploymanager.domain.HealthStatus;
 import no.difi.move.deploymanager.domain.application.Application;
-import no.difi.move.deploymanager.domain.application.predicate.ApplicationHealthPredicate;
-import no.difi.move.deploymanager.domain.application.predicate.ApplicationVersionPredicate;
-import org.apache.commons.io.IOUtils;
+import no.difi.move.deploymanager.repo.DeployDirectoryRepo;
+import no.difi.move.deploymanager.service.actuator.ActuatorService;
+import no.difi.move.deploymanager.service.laucher.LauncherService;
+import no.difi.move.deploymanager.service.laucher.dto.LaunchResult;
+import no.difi.move.deploymanager.service.laucher.dto.LaunchStatus;
+import no.difi.move.deploymanager.service.mail.MailService;
+import org.springframework.stereotype.Component;
 
+import javax.validation.constraints.NotNull;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Objects;
 
 /**
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
  */
+@Component
 @Slf4j
-public class StartAction extends AbstractApplicationAction {
+@RequiredArgsConstructor
+public class StartAction implements ApplicationAction {
 
-    public StartAction(DeployManagerProperties properties) {
-        super(properties);
-    }
+    private final ActuatorService actuatorService;
+    private final LauncherService launcherService;
+    private final DeployDirectoryRepo deployDirectoryRepo;
+    private final MailService mailService;
 
     @Override
-    public Application apply(Application application) {
-        Objects.requireNonNull(application);
-
+    public Application apply(@NotNull Application application) {
         log.debug("Running StartAction.");
+
         if (isAlreadyRunning(application)) {
             log.info("The application is already running.");
             return application;
         }
 
-        String startupProfile = getProperties().getIntegrasjonspunkt().getProfile();
-        String jarPath = application.getFile().getAbsolutePath();
-        Process exec = startProcess(jarPath, startupProfile);
-        consumeOutput(exec);
+        File jarFile = application.getLatest().getFile();
+        LaunchResult launchResult = launcherService.launchIntegrasjonspunkt(jarFile.getAbsolutePath());
+
+        if (launchResult.getStatus() != LaunchStatus.SUCCESS) {
+            deployDirectoryRepo.blackList(jarFile);
+        }
+
+        mailService.sendMail(
+                String.format("Upgrade %s %s", launchResult.getStatus().name(), jarFile.getName()),
+                launchResult.getStartupLog()
+        );
+
+        application.setLaunchResult(launchResult);
 
         return application;
     }
 
     private boolean isAlreadyRunning(Application application) {
-        return new ApplicationHealthPredicate().and(new ApplicationVersionPredicate()).test(application);
+        return application.isSameVersion() && actuatorService.getStatus() == HealthStatus.UP;
     }
-
-    private Process startProcess(String jarPath, String activeProfile) {
-        try {
-            log.info("Starting application.");
-            ProcessBuilder procBuilder = new ProcessBuilder(
-                    "java", "-jar", jarPath,
-                    "--endpoints.shutdown.enabled=true",
-                    "--endpoints.shutdown.sensitive=false",
-                    "--endpoints.health.enabled=true",
-                    "--endpoints.health.sensitive=false",
-                    "--app.logger.enableSSL=false",
-                    "--spring.profiles.active=" + activeProfile)
-                    .directory(new File(getProperties().getRoot()));
-            return procBuilder.start();
-        } catch (IOException e) {
-            throw new DeployActionException("Failed to start process.", e);
-        }
-    }
-
-    private void consumeOutput(Process exec) {
-        OutputStream outputStream = getOutputStream(getProperties().isVerbose());
-        new Thread(() -> {
-            try (InputStream inputStream = exec.getInputStream()) {
-                IOUtils.copy(inputStream, outputStream);
-            } catch (IOException e) {
-                throw new DeployActionException("Could not consume output stream.", e);
-            }
-        }).start();
-    }
-
-    private OutputStream getOutputStream(boolean preserveOutput) {
-        return preserveOutput
-                ? System.out
-                : new OutputStream() {
-            @Override
-            public void write(int b) {
-            }
-        };
-    }
-
 }

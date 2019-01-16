@@ -25,6 +25,18 @@ public class DeployManagerProperties {
     @NotNull
     private URL shutdownURL;
     @NotNull
+    private Integer actuatorConnectTimeoutInMs;
+    @NotNull
+    private Integer actuatorReadTimeoutInMs;
+    @NotNull
+    private Integer shutdownRetries;
+    @NotNull
+    private Integer shutdownPollIntervalInMs;
+    @NotNull
+    private Integer launchTimeountInMs;
+    @NotNull
+    private Integer launchPollIntervalInMs;
+    @NotNull
     private URL healthURL;
     @NotNull
     private URL nexusProxyURL;
@@ -33,7 +45,7 @@ public class DeployManagerProperties {
     private boolean verbose;
     @NotNull
     private String schedulerFixedRateInMs;
-
+    private MailProperties mail;
     @Valid
     private IntegrasjonspunktProperties integrasjonspunkt;
 
@@ -41,5 +53,15 @@ public class DeployManagerProperties {
     public static class IntegrasjonspunktProperties {
         @NotNull
         private String profile;
+    }
+
+    @Data
+    public static class MailProperties {
+
+        @NotNull
+        private String recipient;
+
+        @NotNull
+        private String from;
     }
 }

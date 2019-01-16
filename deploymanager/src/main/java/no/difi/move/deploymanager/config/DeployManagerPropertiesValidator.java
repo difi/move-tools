@@ -6,8 +6,8 @@ import org.springframework.validation.Validator;
 
 public class DeployManagerPropertiesValidator implements Validator {
 
-    public static final String NOT_EMPTY_MESSAGE = "Property must not be empty.";
-    private final long minimumSchedulerRateInMs = 120000L;
+    static final String NOT_EMPTY_MESSAGE = "Property must not be empty.";
+    private static final long MINIMUM_SCHEDULER_RATE_IN_MS = 120000L;
 
     @Override
     public boolean supports(Class<?> aClass) {
@@ -43,12 +43,12 @@ public class DeployManagerPropertiesValidator implements Validator {
 
         try {
             long rate = Long.parseLong(properties.getSchedulerFixedRateInMs());
-            if (rate < minimumSchedulerRateInMs) {
+            if (rate < MINIMUM_SCHEDULER_RATE_IN_MS) {
                 errors.rejectValue(
                         fieldName,
                         "inadequate value",
                         null,
-                        String.format("Please specify a scheduler rate greater than or equal to %s.", minimumSchedulerRateInMs));
+                        String.format("Please specify a scheduler rate greater than or equal to %s.", MINIMUM_SCHEDULER_RATE_IN_MS));
             }
         } catch (NumberFormatException e) {
             errors.rejectValue(fieldName, "invalid value", null, "Invalid scheduling rate.");

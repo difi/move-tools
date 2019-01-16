@@ -1,15 +1,17 @@
 package no.difi.move.deploymanager.action.application;
 
+import lombok.SneakyThrows;
 import no.difi.move.deploymanager.action.DeployActionException;
 import no.difi.move.deploymanager.config.DeployManagerProperties;
 import no.difi.move.deploymanager.domain.application.Application;
 import no.difi.move.deploymanager.domain.application.ApplicationMetadata;
+import no.difi.move.deploymanager.repo.DeployDirectoryRepo;
 import no.difi.move.deploymanager.repo.NexusRepo;
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
@@ -23,6 +25,10 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Java6Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
@@ -31,16 +37,31 @@ public class PrepareApplicationActionTest {
 
     private static final String NEW_APPLICATION_VERSION = "newVersion";
     private static final String OLDER_APPLICATION_VERSION = "olderVersion";
-    private PrepareApplicationAction target;
 
-    @Mock
-    private DeployManagerProperties propertiesMock;
-    @Mock
-    private NexusRepo nexusRepoMock;
+    @InjectMocks private PrepareApplicationAction target;
+
+    @Mock private DeployManagerProperties propertiesMock;
+    @Mock private NexusRepo nexusRepoMock;
+    @Mock private DeployDirectoryRepo deployDirectoryRepoMock;
+    @Mock private File fileMock;
+    @Mock private File blackListedFileMock;
+    @Mock private URL urlMock;
+    @Mock private InputStream streamMock;
+
+    private Application application;
 
     @Before
-    public void setUp() {
-        target = new PrepareApplicationAction(propertiesMock, nexusRepoMock);
+    @SneakyThrows
+    public void before() {
+        application = new Application()
+                .setCurrent(new ApplicationMetadata().setVersion(OLDER_APPLICATION_VERSION))
+                .setLatest(new ApplicationMetadata().setVersion(NEW_APPLICATION_VERSION));
+
+        when(propertiesMock.getRoot()).thenReturn("");
+
+        whenNew(File.class).withParameterTypes(String.class, String.class)
+                .withArguments(Mockito.anyString(), Mockito.anyString())
+                .thenReturn(fileMock);
     }
 
     @Test(expected = NullPointerException.class)
@@ -50,40 +71,33 @@ public class PrepareApplicationActionTest {
 
     @Test
     public void apply_newVersionFound_shouldDownload() throws Exception {
-        when(propertiesMock.getRoot()).thenReturn("");
-        Application targetApplication = new Application();
-        mockDownloadFile(false);
-        setLatestVersion(targetApplication, NEW_APPLICATION_VERSION);
-        setCurrentVersion(targetApplication, OLDER_APPLICATION_VERSION);
         doSuccessfulDownload();
 
-        Application result = target.apply(targetApplication);
-        File resultFile = result.getFile();
-        Assert.assertNotNull(resultFile);
-    }
+        assertThat(target.apply(application)).isSameAs(application);
 
-    private void mockDownloadFile(boolean exists) throws Exception {
-        File fileMock = mock(File.class);
-        when(fileMock.exists()).thenReturn(exists);
-        whenNew(File.class).withParameterTypes(String.class, String.class)
-                .withArguments(Mockito.anyString(), Mockito.anyString())
-                .thenReturn(fileMock);
+        File resultFile = application.getLatest().getFile();
+        assertThat(resultFile).isSameAs(fileMock);
     }
 
     @Test(expected = DeployActionException.class)
     public void apply_downloadThrows_shouldThrow() throws Exception {
-        when(propertiesMock.getRoot()).thenReturn("");
-        Application targetApplication = new Application();
-        setLatestVersion(targetApplication, NEW_APPLICATION_VERSION);
-        setCurrentVersion(targetApplication, OLDER_APPLICATION_VERSION);
         getDownloadException();
+        target.apply(application);
+    }
 
-        target.apply(targetApplication);
+    @Test
+    public void apply_isBlackListed_shouldThrow() {
+        given(deployDirectoryRepoMock.isBlackListed(any())).willReturn(true);
+        given(deployDirectoryRepoMock.getBlackListedFile(any())).willReturn(blackListedFileMock);
+        given(blackListedFileMock.getAbsolutePath()).willReturn("/tmp/test.jar.blacklisted");
+
+        assertThatThrownBy(() -> target.apply(application))
+                .isInstanceOf(DeployActionException.class)
+                .hasMessage("The latest version is black listed! Remove /tmp/test.jar.blacklisted to white list.")
+                .hasNoCause();
     }
 
     private void doSuccessfulDownload() throws Exception {
-        URL urlMock = PowerMockito.mock(URL.class);
-        InputStream streamMock = PowerMockito.mock(InputStream.class);
         when(urlMock.openStream()).thenReturn(streamMock);
         when(nexusRepoMock.getArtifact(Mockito.anyString(), Mockito.any())).thenReturn(urlMock);
         mockStatic(IOUtils.class);
@@ -94,22 +108,8 @@ public class PrepareApplicationActionTest {
     }
 
     private void getDownloadException() throws Exception {
-        URL urlMock = PowerMockito.mock(URL.class);
-        InputStream streamMock = PowerMockito.mock(InputStream.class);
         when(urlMock.openStream()).thenReturn(streamMock);
         when(nexusRepoMock.getArtifact(Mockito.anyString(), Mockito.any()))
                 .thenThrow(new MalformedURLException("test download exception"));
-    }
-
-    private void setLatestVersion(Application targetApplication, String version) {
-        ApplicationMetadata latestMetadataMock = PowerMockito.mock(ApplicationMetadata.class);
-        when(latestMetadataMock.getVersion()).thenReturn(version);
-        targetApplication.setLatest(latestMetadataMock);
-    }
-
-    private void setCurrentVersion(Application targetApplication, String version) {
-        ApplicationMetadata currentMetadataMock = PowerMockito.mock(ApplicationMetadata.class);
-        when(currentMetadataMock.getVersion()).thenReturn(version);
-        targetApplication.setCurrent(currentMetadataMock);
     }
 }

@@ -1,42 +1,36 @@
 package no.difi.move.deploymanager.repo;
 
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import no.difi.move.deploymanager.config.DeployManagerProperties;
-import org.springframework.util.Assert;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.validation.constraints.NotNull;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
  */
+@RequiredArgsConstructor
 public class NexusRepo {
 
     private final DeployManagerProperties properties;
 
-    public NexusRepo(DeployManagerProperties properties) {
-        this.properties = Objects.requireNonNull(properties);
-    }
+    @SneakyThrows(URISyntaxException.class)
+    public URL getArtifact(@NotNull String version, String classifier) throws MalformedURLException {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUri(properties.getNexus().toURI())
+                .pathSegment("service", "local", "artifact", "maven", "content")
+                .queryParam("r", properties.getRepository())
+                .queryParam("g", properties.getGroupId())
+                .queryParam("a", properties.getArtifactId())
+                .queryParam("v", version);
 
-    public URL getArtifact(String version, String classifier)
-            throws MalformedURLException {
-        Assert.notNull(version, "version");
-
-        StringBuilder url = new StringBuilder();
-        url.append(properties.getNexus());
-        url.append("/service/local/artifact/maven/content?");
-        ConcurrentHashMap<String, String> query = new ConcurrentHashMap<>();
-        query.put("r", properties.getRepository());
-        query.put("g", properties.getGroupId());
-        query.put("a", properties.getArtifactId());
-        query.put("v", version);
         if (classifier != null) {
-            query.put("e", classifier);
+            builder.queryParam("e", classifier);
         }
-        String reduce = query.reduce(1, (k, v) -> k + "=" + v, (r1, r2) -> r1 + "&" + r2);
-        url.append(reduce);
-        return new URL(url.toString());
-    }
 
+        return builder.build().toUri().toURL();
+    }
 }

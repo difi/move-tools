@@ -8,8 +8,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.*;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -18,23 +17,25 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Java6Assertions.assertThatThrownBy;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({LatestVersionAction.class, IOUtils.class})
 public class LatestVersionActionTest {
 
-    private final URL urlMock;
-    private final URLConnection connectionMock;
-    @Mock
-    DeployManagerProperties propertiesMock;
-    private LatestVersionAction target;
+    @Mock private URL urlMock;
+    @Mock private URLConnection connectionMock;
+    @Mock private DeployManagerProperties propertiesMock;
+    @Mock private Application applicationMock;
+    @Mock private InputStream streamMock;
 
-    public LatestVersionActionTest() {
-        urlMock = mock(URL.class);
-        connectionMock = mock(URLConnection.class);
-    }
+    @Captor private ArgumentCaptor<ApplicationMetadata> applicationMetadataArgumentCaptor;
+
+    @InjectMocks private LatestVersionAction target;
 
     @Before
     public void setUp() throws Exception {
@@ -42,7 +43,6 @@ public class LatestVersionActionTest {
         whenNew(URL.class).withParameterTypes(String.class)
                 .withArguments(Mockito.anyString()).thenReturn(urlMock);
         when(propertiesMock.getNexusProxyURL()).thenReturn(urlMock);
-        target = new LatestVersionAction(propertiesMock);
     }
 
     @Test(expected = NullPointerException.class)
@@ -50,46 +50,43 @@ public class LatestVersionActionTest {
         target.apply(null);
     }
 
-    @Test(expected = DeployActionException.class)
+    @Test
     public void apply_openConnectionThrowsIOException_shouldThrow() throws IOException {
-        when(urlMock.openConnection()).thenThrow(new IOException("test"));
-        Application result = target.apply(new Application());
-        assertTrue(result.getHealth());
-    }
+        IOException exception = new IOException("test exception");
+        given(urlMock.openConnection()).willThrow(exception);
 
-    @Test(expected = DeployActionException.class)
-    public void apply_raisesIOException_shouldThrow() throws IOException {
-        when(connectionMock.getInputStream()).thenThrow(new IOException("test"));
-
-        Application result = target.apply(new Application());
-        assertTrue(result.getHealth());
+        assertThatThrownBy(() -> target.apply(applicationMock))
+                .isInstanceOf(DeployActionException.class)
+                .hasMessage("Error downloading file")
+                .hasCause(exception);
     }
 
     @Test
     public void apply_receivesValidNexusResponse_shouldSetLatestVersion() throws IOException {
-        final String baseVersion = "baseVersion";
-        final String sha1 = "sha1";
-        final String nexusResponse = getNexusResponse(baseVersion, sha1);
-        InputStream streamMock = mock(InputStream.class);
+        final String nexusResponse = getNexusResponse();
         when(connectionMock.getInputStream()).thenReturn(streamMock);
         when(connectionMock.getContentEncoding()).thenReturn(null);
+        when(propertiesMock.getRepository()).thenReturn("staging");
         mockStatic(IOUtils.class);
         when(IOUtils.toString(streamMock, connectionMock.getContentEncoding())).thenReturn(nexusResponse);
 
-        Application result = target.apply(new Application());
-        ApplicationMetadata latest = result.getLatest();
+        assertThat(target.apply(applicationMock)).isSameAs(applicationMock);
 
-        Mockito.verify(streamMock).close();
-        assertNotNull(latest);
-        assertEquals(baseVersion, latest.getVersion());
-        assertEquals(sha1, latest.getSha1());
+        verify(applicationMock).setLatest(applicationMetadataArgumentCaptor.capture());
+
+        ApplicationMetadata captorValue = applicationMetadataArgumentCaptor.getValue();
+
+        assertThat(captorValue.getVersion()).isEqualTo("baseVersion");
+        assertThat(captorValue.getRepositoryId()).isEqualTo("staging");
+        assertThat(captorValue.getSha1()).isEqualTo("sha1");
+        assertThat(captorValue.getFile()).isNull();
     }
 
-    private String getNexusResponse(String baseVersion, String sha1) {
+    private String getNexusResponse() {
         return "{\n" +
-                "  \"baseVersion\": \"" + baseVersion + "\",\n" +
+                "  \"baseVersion\": \"baseVersion\",\n" +
                 "  \"version\": \"version\",\n" +
-                "  \"sha1\": \"" + sha1 + "\",\n" +
+                "  \"sha1\": \"sha1\",\n" +
                 "  \"downloadUri\": \"https://downloadUri.here\"\n" +
                 "}";
     }
