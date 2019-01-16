@@ -1,7 +1,15 @@
+### IntelliJ IDEA ###
 /.idea/
 *.iml
+*.iws
+*.ipr
+
+### Maven
 /*/target/
 /dashboard/dashboard-frontend/target/
-npm-debug.log
 /dashboard/move-dashboard/target/
+
+### node.js
+npm-debug.log
 node_modules
+

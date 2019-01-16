@@ -1,50 +1,68 @@
 package no.difi.move.deploymanager.action.application;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.difi.move.deploymanager.DeployManagerMain;
 import no.difi.move.deploymanager.action.DeployActionException;
+import no.difi.move.deploymanager.config.DeployManagerProperties;
 import no.difi.move.deploymanager.domain.application.Application;
-import no.difi.move.deploymanager.domain.application.predicate.ApplicationVersionPredicate;
+import no.difi.move.deploymanager.repo.DeployDirectoryRepo;
 import no.difi.move.deploymanager.repo.NexusRepo;
 import org.apache.commons.io.IOUtils;
+import org.springframework.stereotype.Component;
+
+import javax.validation.constraints.NotNull;
+import java.io.*;
 
 /**
- *
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
  */
+@Component
 @Slf4j
-public class PrepareApplicationAction extends AbstractApplicationAction {
+@RequiredArgsConstructor
+public class PrepareApplicationAction implements ApplicationAction {
 
+    private final DeployManagerProperties properties;
     private final NexusRepo nexusRepo;
+    private final DeployDirectoryRepo deployDirectoryRepo;
 
-    public PrepareApplicationAction(DeployManagerMain manager) {
-        super(manager);
-        this.nexusRepo = new NexusRepo(manager);
-    }
+    public Application apply(@NotNull Application application) {
+        log.debug("Running PrepareApplicationAction.");
+        log.info("Preparing application.");
+        File downloadFile = getDownloadFile(application);
 
-    public Application apply(Application application) {
-        log.info("Prepare jar.");
-        String root = getManager().getProperties().getProperty("root");
-        File download = new File(root, "integrasjonspunkt-" + application.getLatest().getVersion() + ".jar");
-        if (!(download.exists() && new ApplicationVersionPredicate().test(application))) {
+        if (deployDirectoryRepo.isBlackListed(downloadFile)) {
+            throw new DeployActionException(
+                    String.format("The latest version is black listed! Remove %s to white list.",
+                            deployDirectoryRepo.getBlackListedFile(downloadFile).getAbsolutePath()));
+        }
+
+        if (shouldDownload(application, downloadFile)) {
             log.info("Latest is different from current. Downloading newest version.");
             try {
-                try (InputStream is = nexusRepo.getArtifact(application.getLatest().getVersion(), null).openStream();
-                        OutputStream os = new FileOutputStream(download)) {
-                    IOUtils.copy(is, os);
-                }
+                doDownload(application, downloadFile);
             } catch (IOException ex) {
-                log.error(null, ex);
                 throw new DeployActionException("Error getting latest version", ex);
             }
         }
-        application.setFile(download);
+
+        application.getLatest().setFile(downloadFile);
         return application;
     }
 
+    private void doDownload(Application application, File destination) throws IOException {
+        try (InputStream is = nexusRepo.getArtifact(application.getLatest().getVersion(), null).openStream();
+             OutputStream os = new FileOutputStream(destination)) {
+            IOUtils.copy(is, os);
+        }
+    }
+
+    private boolean shouldDownload(Application application, File fileToDownload) {
+        return !fileToDownload.exists() || !application.isSameVersion();
+    }
+
+    private File getDownloadFile(Application application) {
+        String root = properties.getRoot();
+        String latestVersion = application.getLatest().getVersion();
+        return new File(root, String.format("integrasjonspunkt-%s.jar", latestVersion));
+    }
 }

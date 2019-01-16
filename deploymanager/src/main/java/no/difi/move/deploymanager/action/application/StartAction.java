@@ -1,70 +1,60 @@
 package no.difi.move.deploymanager.action.application;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.difi.move.deploymanager.DeployManagerMain;
-import no.difi.move.deploymanager.action.DeployActionException;
+import no.difi.move.deploymanager.domain.HealthStatus;
 import no.difi.move.deploymanager.domain.application.Application;
-import no.difi.move.deploymanager.domain.application.predicate.ApplicationHealthPredicate;
-import no.difi.move.deploymanager.domain.application.predicate.ApplicationVersionPredicate;
 import no.difi.move.deploymanager.repo.DeployDirectoryRepo;
-import org.apache.commons.io.IOUtils;
+import no.difi.move.deploymanager.service.actuator.ActuatorService;
+import no.difi.move.deploymanager.service.laucher.LauncherService;
+import no.difi.move.deploymanager.service.laucher.dto.LaunchResult;
+import no.difi.move.deploymanager.service.laucher.dto.LaunchStatus;
+import no.difi.move.deploymanager.service.mail.MailService;
+import org.springframework.stereotype.Component;
+
+import javax.validation.constraints.NotNull;
+import java.io.File;
 
 /**
- *
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
  */
+@Component
 @Slf4j
-public class StartAction extends AbstractApplicationAction {
+@RequiredArgsConstructor
+public class StartAction implements ApplicationAction {
 
-    private DeployDirectoryRepo directoryRepo;
-
-    public StartAction(DeployManagerMain manager) {
-        super(manager);
-        this.directoryRepo = new DeployDirectoryRepo(manager);
-    }
+    private final ActuatorService actuatorService;
+    private final LauncherService launcherService;
+    private final DeployDirectoryRepo deployDirectoryRepo;
+    private final MailService mailService;
 
     @Override
-    public Application apply(Application application) {
-        if (new ApplicationHealthPredicate().and(new ApplicationVersionPredicate()).test(application)) {
+    public Application apply(@NotNull Application application) {
+        log.debug("Running StartAction.");
+
+        if (isAlreadyRunning(application)) {
+            log.info("The application is already running.");
             return application;
         }
-        log.info("Start application.");
-        try {
-            Process exec = Runtime.getRuntime().exec(
-                    "java -jar " + application.getFile().getAbsolutePath() + " --endpoints.shutdown.enabled=true",
-                    null,
-                    new File(getManager().getProperties().getProperty("root")));
 
-            getOutput(exec);
+        File jarFile = application.getLatest().getFile();
+        LaunchResult launchResult = launcherService.launchIntegrasjonspunkt(jarFile.getAbsolutePath());
 
-            updateMetadata(application);
-
-            return application;
-        } catch (IOException ex) {
-            log.error(null, ex);
-            throw new DeployActionException("Error starting application", ex);
+        if (launchResult.getStatus() != LaunchStatus.SUCCESS) {
+            deployDirectoryRepo.blackList(jarFile);
         }
+
+        mailService.sendMail(
+                String.format("Upgrade %s %s", launchResult.getStatus().name(), jarFile.getName()),
+                launchResult.getStartupLog()
+        );
+
+        application.setLaunchResult(launchResult);
+
+        return application;
     }
 
-    private void getOutput(Process exec) throws IOException {
-        if (getManager().getProperties().getOrDefault("verbose", "false").equals("true")) {
-            IOUtils.copy(exec.getInputStream(), System.out);
-        }
+    private boolean isAlreadyRunning(Application application) {
+        return application.isSameVersion() && actuatorService.getStatus() == HealthStatus.UP;
     }
-
-    private void updateMetadata(Application application) throws IOException {
-        Properties metadata = directoryRepo.getMetadata();
-
-        metadata.setProperty("version", application.getLatest().getVersion());
-        if (application.getLatest().getSha1() != null) {
-            metadata.setProperty("sha1", application.getLatest().getSha1());
-        }
-        metadata.setProperty("repositoryId", application.getLatest().getRepositoryId());
-
-        directoryRepo.setMetadata(metadata);
-    }
-
 }

@@ -1,94 +1,72 @@
 package no.difi.move.deploymanager;
 
-import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import no.difi.move.deploymanager.command.AbstractCommand;
+import no.difi.move.deploymanager.command.Command;
 import no.difi.move.deploymanager.config.CommandLineOptions;
-import no.difi.move.deploymanager.handler.AbstractHandler;
-import no.difi.move.deploymanager.handler.DefaultHandler;
+import no.difi.move.deploymanager.config.DeployManagerProperties;
+import no.difi.move.deploymanager.config.DeployManagerPropertiesValidator;
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.validation.Validator;
+
+import java.util.List;
 
 /**
- *
  * @author Nikolai Luthman <nikolai dot luthman at inmeta dot no>
  */
 @Data
 @Slf4j
-public final class DeployManagerMain {
+@SpringBootApplication
+@EnableScheduling
+@EnableConfigurationProperties(DeployManagerProperties.class)
+public class DeployManagerMain implements CommandLineRunner {
 
-    private Properties properties = new Properties();
-    private CommandLine commandLine;
-    private Options options;
-    private List<AbstractCommand> commands;
-    private Class<? extends AbstractHandler> handler = DefaultHandler.class;
+    private final List<Command> commands;
+    private final DeployManagerProperties deployManagerProperties;
+    private final Options options;
 
-    public static void main(String[] args) throws Throwable {
-        new DeployManagerMain(args).run();
+    public DeployManagerMain(List<Command> commands, DeployManagerProperties managerProperties) {
+        this.commands = commands;
+        this.deployManagerProperties = managerProperties;
+        this.options = CommandLineOptions.options(commands);
     }
 
-    private DeployManagerMain(final String[] args) {
-        loadConfig();
-        addCommands();
-        parseCommandLine(args);
+    @Bean(name = "configurationPropertiesValidator")
+    public static Validator configurationPropertiesValidator() { // Required name and access modifier on custom Spring validator.
+        return new DeployManagerPropertiesValidator();
     }
 
-    private void parseCommandLine(String[] args) {
-        CommandLineParser parser = new DefaultParser();
+    public static void main(String[] args) {
+        SpringApplication.run(DeployManagerMain.class, args);
+    }
 
+    @Override
+    public void run(String... args) {
         try {
-            this.options = CommandLineOptions.options(commands);
-            this.commandLine = parser.parse(this.options, args);
+            CommandLine commandLine = parseCommands(args);
+            runCommands(commandLine);
         } catch (ParseException ex) {
             log.error(null, ex);
             System.exit(1);
         }
     }
 
-    private void loadConfig() {
-        try (InputStream is = new FileInputStream(new File("config.properties"))) {
-            properties.load(is);
-        } catch (IOException ex) {
-            log.error("Can't load properties", ex);
-        }
+    private CommandLine parseCommands(String[] args) throws ParseException {
+        return new DefaultParser().parse(this.options, args);
     }
 
-    private void addCommands() {
-        this.commands = new ArrayList();
-        new FastClasspathScanner("no.difi.move.deploymanager.command")
-                .matchClassesImplementing(AbstractCommand.class,
-                        c -> {
-                            try {
-                                commands.add(c.newInstance());
-                            } catch (InstantiationException | IllegalAccessException ex) {
-                                log.error(null, ex);
-                            }
-                        }
-                ).scan();
-    }
-
-    public void run() {
+    private void runCommands(CommandLine commandLine) {
         commands.stream()
-                .filter((command) -> (command.supports(commandLine)))
-                .forEachOrdered((command) -> {
-                    command.run(this);
-                });
-        try {
-            handler.newInstance().run(this);
-        } catch (InstantiationException | IllegalAccessException ex) {
-            log.error(null, ex);
-        }
+                .filter(command -> command.supports(commandLine))
+                .forEachOrdered(command -> command.run(commandLine, options));
     }
-
 }
