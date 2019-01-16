@@ -7,8 +7,10 @@ import lombok.extern.slf4j.Slf4j;
 import no.difi.move.deploymanager.action.DeployActionException;
 import no.difi.move.deploymanager.domain.application.Application;
 import no.difi.move.deploymanager.repo.NexusRepo;
+import no.difi.move.deploymanager.service.jarsigner.JarsSignerService;
 import org.apache.commons.io.IOUtils;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
 
 import javax.validation.constraints.NotNull;
 import java.io.*;
@@ -23,9 +25,11 @@ import java.security.NoSuchAlgorithmException;
 @Component
 @Slf4j
 @RequiredArgsConstructor
+@Validated
 public class ValidateAction implements ApplicationAction {
 
     private final NexusRepo nexusRepo;
+    private final JarsSignerService jarsSignerService;
 
     @Override
     public Application apply(@NotNull Application application) {
@@ -34,8 +38,9 @@ public class ValidateAction implements ApplicationAction {
             log.info("Validating jar.");
             assertChecksumIsCorrect(application, ALGORITHM.SHA1);
             assertChecksumIsCorrect(application, ALGORITHM.MD5);
+            jarsSignerService.verify(application.getLatest().getFile().getAbsolutePath());
             return application;
-        } catch (IOException | NoSuchAlgorithmException ex) {
+        } catch (Exception ex) {
             throw new DeployActionException("Error validating jar", ex);
         }
     }

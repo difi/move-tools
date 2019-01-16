@@ -1,19 +1,22 @@
 package no.difi.move.deploymanager.action.application;
 
 import ch.qos.logback.core.encoder.ByteArrayUtil;
+import lombok.SneakyThrows;
 import no.difi.move.deploymanager.action.DeployActionException;
 import no.difi.move.deploymanager.domain.application.Application;
 import no.difi.move.deploymanager.domain.application.ApplicationMetadata;
 import no.difi.move.deploymanager.repo.NexusRepo;
+import no.difi.move.deploymanager.service.jarsigner.JarsSignerService;
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.zeroturnaround.exec.InvalidExitValueException;
 
 import java.io.*;
 import java.net.URL;
@@ -21,6 +24,11 @@ import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
@@ -30,82 +38,80 @@ public class ValidateActionTest {
     @InjectMocks private ValidateAction target;
 
     @Mock private NexusRepo nexusRepoMock;
+    @Mock private JarsSignerService jarsSignerService;
+    @Mock private URL urlMock;
+    @Mock private InputStream inputStreamMock;
+    @Mock private MessageDigest digestMock;
+    @Mock private StringWriter stringWriterMock;
+    @Mock private File fileMock;
+    @Mock private FileInputStream fileInputStreamMock;
+    @Mock private DigestInputStream digestInputStreamMock;
+    @Mock private InvalidExitValueException invalidExitValueExceptionMock;
 
-    @Test(expected = NullPointerException.class)
-    public void apply_toNull_shouldThrow() {
-        target.apply(null);
+    @Spy private Application application = new Application();
+
+    @Before
+    @SneakyThrows
+    public void before() {
+        application.setLatest(new ApplicationMetadata()
+                .setVersion("version")
+                .setFile(fileMock)
+        );
+
+        given(fileMock.getAbsolutePath()).willReturn("jarPath");
+
+        given(nexusRepoMock.getArtifact(anyString(), anyString())).willReturn(urlMock);
+        given(urlMock.openStream()).willReturn(inputStreamMock);
+
+        whenNew(StringWriter.class).withNoArguments().thenReturn(stringWriterMock);
+
+        whenNew(FileInputStream.class).withAnyArguments().thenReturn(fileInputStreamMock);
+        whenNew(DigestInputStream.class).withAnyArguments().thenReturn(digestInputStreamMock);
+        given(digestInputStreamMock.read(any())).willReturn(-1);
+
+        mockStatic(IOUtils.class);
+        given(IOUtils.copy(any(InputStream.class), any(OutputStream.class))).willReturn(1);
+
+        mockStatic(MessageDigest.class);
+        given(MessageDigest.getInstance(anyString())).willReturn(digestMock);
+
+        mockStatic(ByteArrayUtil.class);
+        given(ByteArrayUtil.hexStringToByteArray(anyString())).willReturn(null);
+
+        given(MessageDigest.isEqual(any(), any())).willReturn(true);
     }
 
     @Test(expected = DeployActionException.class)
-    public void apply_verificationFails_shouldThrow() throws Exception {
-        Application input = mockInputApplication();
-        mockVerifyChecksum(false);
-        target.apply(input);
+    public void apply_verificationFails_shouldThrow() {
+        given(MessageDigest.isEqual(any(), any())).willReturn(false);
+        target.apply(application);
     }
 
     @Test(expected = DeployActionException.class)
     public void apply_IOExceptionCaught_shouldThrow() throws Exception {
-        Application input = mockInputApplication();
-        mockInputStream();
         whenNew(StringWriter.class).withNoArguments().thenThrow(new IOException("test exception"));
-        target.apply(input);
+        target.apply(application);
     }
 
     @Test(expected = DeployActionException.class)
     public void apply_NoSuchAlgorithmExceptionCaught_shouldThrow() throws Exception {
-        Application input = mockInputApplication();
-        mockInputStream();
-        mockStatic(MessageDigest.class);
-        when(MessageDigest.getInstance(Mockito.anyString())).thenThrow(new NoSuchAlgorithmException("test exception"));
-        target.apply(input);
+        given(MessageDigest.getInstance(anyString())).willThrow(new NoSuchAlgorithmException("test exception"));
+        target.apply(application);
     }
 
     @Test
-    public void apply_verificationSucceeds_shouldSucceed() throws Exception {
-        Application input = mockInputApplication();
-        mockVerifyChecksum(true);
-        Application result = target.apply(input);
-        Assert.assertNotNull(result);
+    public void apply_jarSigningVerificationFails_shouldThrow() {
+        doThrow(invalidExitValueExceptionMock).when(jarsSignerService).verify(any());
+        assertThatThrownBy(() -> target.apply(application))
+                .isInstanceOf(DeployActionException.class)
+                .hasMessage("Error validating jar")
+                .hasCause(invalidExitValueExceptionMock);
+        verify(jarsSignerService).verify("jarPath");
     }
 
-    private Application mockInputApplication() {
-        File fileMock = mock(File.class);
-        Application input = new Application();
-        ApplicationMetadata metadataMock = mock(ApplicationMetadata.class);
-        when(metadataMock.getVersion()).thenReturn("version");
-        when(metadataMock.getFile()).thenReturn(fileMock);
-        input.setLatest(metadataMock);
-        return input;
-    }
-
-    private void mockVerifyChecksum(boolean passVerification) throws Exception {
-        mockInputStream();
-        whenNew(StringWriter.class).withNoArguments().thenReturn(mock(StringWriter.class));
-
-        FileInputStream fileInputStreamMock = mock(FileInputStream.class);
-        whenNew(FileInputStream.class).withAnyArguments().thenReturn(fileInputStreamMock);
-
-        DigestInputStream digestInputStreamMock = mock(DigestInputStream.class);
-        whenNew(DigestInputStream.class).withAnyArguments().thenReturn(digestInputStreamMock);
-        when(digestInputStreamMock.read(Mockito.any())).thenReturn(-1);
-
-        mockStatic(IOUtils.class);
-        when(IOUtils.copy(Mockito.any(InputStream.class), Mockito.any(OutputStream.class))).thenReturn(1);
-
-        mockStatic(MessageDigest.class);
-        MessageDigest digestMock = mock(MessageDigest.class);
-        when(MessageDigest.getInstance(Mockito.anyString())).thenReturn(digestMock);
-
-        mockStatic(ByteArrayUtil.class);
-        when(ByteArrayUtil.hexStringToByteArray(Mockito.anyString())).thenReturn(null);
-
-        when(MessageDigest.isEqual(Mockito.any(), Mockito.any())).thenReturn(passVerification);
-    }
-
-    private void mockInputStream() throws IOException {
-        URL urlMock = mock(URL.class);
-        when(nexusRepoMock.getArtifact(Mockito.anyString(), Mockito.anyString())).thenReturn(urlMock);
-        InputStream inputStreamMock = mock(InputStream.class);
-        when(urlMock.openStream()).thenReturn(inputStreamMock);
+    @Test
+    public void apply_verificationSucceeds_shouldSucceed() {
+        assertThat(target.apply(application)).isSameAs(application);
+        verify(jarsSignerService).verify("jarPath");
     }
 }

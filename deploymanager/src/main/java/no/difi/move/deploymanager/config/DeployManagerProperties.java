@@ -45,15 +45,12 @@ public class DeployManagerProperties {
     private boolean verbose;
     @NotNull
     private String schedulerFixedRateInMs;
+    @Valid
     private MailProperties mail;
     @Valid
     private IntegrasjonspunktProperties integrasjonspunkt;
-
-    @Data
-    public static class IntegrasjonspunktProperties {
-        @NotNull
-        private String profile;
-    }
+    @Valid
+    private KeystoreProperties keystore;
 
     @Data
     public static class MailProperties {
@@ -63,5 +60,10 @@ public class DeployManagerProperties {
 
         @NotNull
         private String from;
+    }
+
+    @Data
+    public static class IntegrasjonspunktProperties {
+        private String profile;
     }
 }
