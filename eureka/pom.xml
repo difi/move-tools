@@ -5,7 +5,7 @@
 
 	<groupId>no.difi.move</groupId>
 	<artifactId>eureka</artifactId>
-	<version>1.0.1</version>
+	<version>1.1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>MOVE :: Eureka</name>
@@ -14,7 +14,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.0.0.RELEASE</version>
+		<version>2.3.3.RELEASE</version>
 		<relativePath/>
 	</parent>
 
@@ -22,7 +22,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
-		<spring-cloud.version>Finchley.M8</spring-cloud.version>
+		<spring-cloud.version>Hoxton.SR8</spring-cloud.version>
 		<docker.registry>difimove2</docker.registry>
 	</properties>
 
@@ -44,18 +44,6 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
 		</dependency>
-		
-		<!-- Logback -->
-		
-		<dependency>
-			<!-- needed for ELK stack -->
-            <groupId>net.logstash.logback</groupId>
-            <artifactId>logstash-logback-encoder</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.codehaus.janino</groupId>
-            <artifactId>janino</artifactId>
-        </dependency>
 		
 		<!-- TEST -->
 		<dependency>
@@ -79,18 +67,6 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
-			
-			<dependency>
-				<groupId>net.logstash.logback</groupId>
-				<artifactId>logstash-logback-encoder</artifactId>
-				<version>5.0</version>
-			</dependency>
-			<dependency>
-				<groupId>org.codehaus.janino</groupId>
-				<artifactId>janino</artifactId>
-				<version>3.0.8</version>
-			</dependency>
-
 		</dependencies>
 	</dependencyManagement>
 	
