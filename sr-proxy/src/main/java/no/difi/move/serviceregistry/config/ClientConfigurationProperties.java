@@ -4,6 +4,7 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.core.io.Resource;
+import org.springframework.security.config.annotation.web.configurers.UrlAuthorizationConfigurer;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
@@ -24,16 +25,6 @@ public class ClientConfigurationProperties {
     @Valid
     private Oidc oidc;
 
-    @Valid
-    private SrSignature srSignature;
-
-    @Data
-    public static class SrSignature {
-        @NotNull
-        private String enabled; // This is of type String because of default property reference. (Shared with integrasjonspunkt.)
-        private Resource certificate;
-    }
-
     @Data
     public static class Oidc {
         @NotNull
@@ -44,6 +35,8 @@ public class ClientConfigurationProperties {
         private String audience;
         @NotNull
         private String scopes;
+        @NotNull
+        private URL jwkUrl;
     }
 
 }
