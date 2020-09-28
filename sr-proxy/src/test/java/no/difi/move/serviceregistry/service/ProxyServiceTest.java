@@ -6,11 +6,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(SpringRunner.class)
 public class ProxyServiceTest {
 
     @Mock
@@ -22,7 +22,7 @@ public class ProxyServiceTest {
     final static String ORG_NUMMER = "991825827";
 
     @Test
-    public void shouldCallClientsLookupIdentifier() throws Exception {
+    public void shouldCallClientsLookupIdentifier() {
         when(client.lookupIdentifier(anyString())).thenReturn("hei");
 
         String response = service.lookupIdentifier(ORG_NUMMER);
