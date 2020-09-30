@@ -1,64 +1,49 @@
 package no.difi.move.serviceregistry.config;
 
-import no.difi.move.serviceregistry.auth.OidcAccessTokenProvider;
-import no.difi.move.serviceregistry.auth.OidcTokenClient;
-import no.difi.move.serviceregistry.client.RestClient;
-import no.difi.move.serviceregistry.client.ServiceRegistryClient;
-import no.difi.move.serviceregistry.service.ProxyService;
+import no.difi.move.serviceregistry.auth.JwtBearerGrantRequest;
+import no.difi.move.serviceregistry.auth.JwtBearerOAuth2AuthorizedClientProvider;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.oauth2.client.DefaultOAuth2ClientContext;
-import org.springframework.security.oauth2.client.OAuth2RestTemplate;
-import org.springframework.security.oauth2.client.resource.BaseOAuth2ProtectedResourceDetails;
-import org.springframework.security.oauth2.client.token.DefaultAccessTokenRequest;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
-import org.springframework.web.client.RestOperations;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.security.cert.CertificateException;
+import org.springframework.security.oauth2.client.*;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
-@EnableOAuth2Client
+@EnableConfigurationProperties(ClientConfigurationProperties.class)
 public class ProxyConfiguration {
 
     @Bean
-    RestClient restClient(ClientConfigurationProperties configurationProperties, RestOperations restOperations) throws CertificateException, IOException, URISyntaxException {
-        return new RestClient(configurationProperties, restOperations);
+    ClientRegistration clientRegistration(ClientConfigurationProperties properties) {
+        return ClientRegistration.withRegistrationId(properties.getOidc().getRegistrationId())
+                .authorizationGrantType(JwtBearerGrantRequest.JWT_BEARER_GRANT_TYPE)
+                .build();
     }
 
     @Bean
-    ClientConfigurationProperties getClientConfigurationProperties() {
-        return new ClientConfigurationProperties();
+    WebClient webClient(ClientConfigurationProperties properties,
+                        ClientRegistration clientRegistration,
+                        JwtBearerOAuth2AuthorizedClientProvider clientProvider) {
+        ClientRegistrationRepository registrationRepository = new InMemoryClientRegistrationRepository(clientRegistration);
+        OAuth2AuthorizedClientService authorizedClientService = new InMemoryOAuth2AuthorizedClientService(registrationRepository);
+        AuthorizedClientServiceOAuth2AuthorizedClientManager clientManager
+                = new AuthorizedClientServiceOAuth2AuthorizedClientManager(registrationRepository, authorizedClientService);
+        OAuth2AuthorizedClientProvider authorizedClientProvider
+                = OAuth2AuthorizedClientProviderBuilder.builder()
+                .provider(clientProvider)
+                .build();
+        clientManager.setAuthorizedClientProvider(authorizedClientProvider);
+        ServletOAuth2AuthorizedClientExchangeFilterFunction filter
+                = new ServletOAuth2AuthorizedClientExchangeFilterFunction(clientManager);
+        filter.setDefaultClientRegistrationId(properties.getOidc().getRegistrationId());
+        filter.setDefaultOAuth2AuthorizedClient(true);
+        return WebClient.builder()
+                .apply(filter.oauth2Configuration())
+                .baseUrl(properties.getEndpointURL().toString())
+                .build();
     }
 
-    @Bean
-    ServiceRegistryClient getServiceRegistryClient(RestClient restClient) {
-        return new ServiceRegistryClient(restClient);
-    }
-
-    @Bean
-    ProxyService proxyService(ServiceRegistryClient restClient) {
-        return new ProxyService(restClient);
-    }
-
-    @Bean
-    OidcTokenClient getOidcTokenClient(ClientConfigurationProperties clientConfigurationProperties) {
-        return new OidcTokenClient(clientConfigurationProperties);
-    }
-
-    @Bean
-    public RestOperations getRestTemplate(ClientConfigurationProperties properties, OidcTokenClient oidcTokenClient) throws URISyntaxException {
-        DefaultAccessTokenRequest tokenRequest = new DefaultAccessTokenRequest();
-
-        BaseOAuth2ProtectedResourceDetails resourceDetails = new BaseOAuth2ProtectedResourceDetails();
-        resourceDetails.setAccessTokenUri(String.valueOf(properties.getOidc().getUrl().toURI()));
-        resourceDetails.setScope(oidcTokenClient.getScopes());
-        resourceDetails.setClientId(properties.getOidc().getClientId());
-
-        OAuth2RestTemplate template = new OAuth2RestTemplate(resourceDetails, new DefaultOAuth2ClientContext(tokenRequest));
-        template.setAccessTokenProvider(new OidcAccessTokenProvider(oidcTokenClient));
-
-        return template;
-    }
 }

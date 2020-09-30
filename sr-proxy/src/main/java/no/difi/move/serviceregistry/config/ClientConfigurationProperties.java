@@ -28,10 +28,13 @@ public class ClientConfigurationProperties {
     @Data
     public static class Oidc {
         @NotNull
+        private String registrationId;
+        @NotNull
         private String clientId;
         private URL url;
         @NestedConfigurationProperty
         private KeyStoreProperties keystore;
+        @NotNull
         private String audience;
         @NotNull
         private String scopes;

@@ -1,6 +1,6 @@
 package no.difi.move.serviceregistry.controller;
 
-import no.difi.move.serviceregistry.service.ProxyService;
+import no.difi.move.serviceregistry.client.ServiceRegistryClient;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 public class ProxyControllerTest {
 
     @MockBean
-    private ProxyService service;
+    private ServiceRegistryClient serviceRegistryClient;
 
     @Autowired
     private MockMvc mockMvc;
