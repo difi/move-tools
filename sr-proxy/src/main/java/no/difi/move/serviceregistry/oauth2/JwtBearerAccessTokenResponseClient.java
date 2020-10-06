@@ -1,4 +1,4 @@
-package no.difi.move.serviceregistry.auth;
+package no.difi.move.serviceregistry.oauth2;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -13,6 +13,7 @@ import com.nimbusds.jwt.SignedJWT;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.difi.move.serviceregistry.config.ClientConfigurationProperties;
+import no.difi.move.serviceregistry.keystore.KeystoreAccessor;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
@@ -61,7 +62,7 @@ public class JwtBearerAccessTokenResponseClient implements OAuth2AccessTokenResp
                     .issueTime(Date.from(ZonedDateTime.now(ZoneOffset.UTC).toInstant()))
                     .expirationTime(Date.from(ZonedDateTime.now(ZoneOffset.UTC).toInstant().plusSeconds(120)))
                     .build();
-            JWSSigner signer = new RSASSASigner(accessor.loadPrivateKey());
+            JWSSigner signer = new RSASSASigner(accessor.getKeyPair().getPrivate());
             SignedJWT signedJWT = new SignedJWT(jwtHeader, claims);
             signedJWT.sign(signer);
             return signedJWT.serialize();

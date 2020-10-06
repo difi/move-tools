@@ -2,7 +2,7 @@ package no.difi.move.serviceregistry.client;
 
 import com.nimbusds.jose.proc.BadJWSException;
 import lombok.RequiredArgsConstructor;
-import no.difi.move.serviceregistry.auth.JwtDecoder;
+import no.difi.move.serviceregistry.oauth2.JwtDecoder;
 import no.difi.move.serviceregistry.config.ClientConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;

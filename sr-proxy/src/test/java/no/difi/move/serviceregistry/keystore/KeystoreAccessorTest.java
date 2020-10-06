@@ -1,4 +1,4 @@
-package no.difi.move.serviceregistry.auth;
+package no.difi.move.serviceregistry.keystore;
 
 import com.google.common.io.ByteStreams;
 import no.difi.asic.*;

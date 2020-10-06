@@ -1,4 +1,4 @@
-package no.difi.move.serviceregistry.auth;
+package no.difi.move.serviceregistry.oauth2;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSObject;

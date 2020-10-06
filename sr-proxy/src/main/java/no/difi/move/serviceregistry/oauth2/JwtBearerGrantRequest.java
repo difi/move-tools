@@ -1,10 +1,9 @@
-package no.difi.move.serviceregistry.auth;
+package no.difi.move.serviceregistry.oauth2;
 
 import lombok.Getter;
 import org.springframework.security.oauth2.client.endpoint.AbstractOAuth2AuthorizationGrantRequest;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
-import org.springframework.security.oauth2.jwt.Jwt;
 
 @Getter
 public class JwtBearerGrantRequest extends AbstractOAuth2AuthorizationGrantRequest {

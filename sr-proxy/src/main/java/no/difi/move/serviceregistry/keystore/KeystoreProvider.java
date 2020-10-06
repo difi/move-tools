@@ -1,4 +1,4 @@
-package no.difi.move.serviceregistry.auth;
+package no.difi.move.serviceregistry.keystore;
 
 import lombok.RequiredArgsConstructor;
 import no.difi.move.serviceregistry.config.KeyStoreProperties;

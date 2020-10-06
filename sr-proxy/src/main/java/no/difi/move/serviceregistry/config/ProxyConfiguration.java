@@ -1,7 +1,7 @@
 package no.difi.move.serviceregistry.config;
 
-import no.difi.move.serviceregistry.auth.JwtBearerGrantRequest;
-import no.difi.move.serviceregistry.auth.JwtBearerOAuth2AuthorizedClientProvider;
+import no.difi.move.serviceregistry.oauth2.JwtBearerGrantRequest;
+import no.difi.move.serviceregistry.oauth2.JwtBearerOAuth2AuthorizedClientProvider;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
