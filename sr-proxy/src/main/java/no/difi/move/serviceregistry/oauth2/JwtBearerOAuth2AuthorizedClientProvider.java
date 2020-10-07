@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.OAuth2AuthorizationContext;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProvider;
+import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.core.AbstractOAuth2Token;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
@@ -22,7 +23,7 @@ import java.time.Instant;
 @RequiredArgsConstructor
 public class JwtBearerOAuth2AuthorizedClientProvider implements OAuth2AuthorizedClientProvider {
 
-    private final JwtBearerAccessTokenResponseClient tokenResponseClient;
+    private final OAuth2AccessTokenResponseClient<JwtBearerGrantRequest> tokenResponseClient;
     private Duration clockSkew = Duration.ofSeconds(60);
     private Clock clock = Clock.systemUTC();
 
@@ -49,6 +50,6 @@ public class JwtBearerOAuth2AuthorizedClientProvider implements OAuth2Authorized
     }
 
     private boolean isExpired(AbstractOAuth2Token token) {
-        return token.getExpiresAt().isBefore(Instant.now(clock).minus(clockSkew));
+        return clock.instant().isAfter(token.getExpiresAt().minus(this.clockSkew));
     }
 }
