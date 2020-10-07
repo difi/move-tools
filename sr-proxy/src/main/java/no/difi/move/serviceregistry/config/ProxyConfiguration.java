@@ -28,8 +28,8 @@ public class ProxyConfiguration {
 
     @Bean(name = "ServiceRegistryWebClient")
     WebClient serviceRegistryWebClient(ClientConfigurationProperties properties,
-                        ClientRegistration clientRegistration,
-                        JwtBearerOAuth2AuthorizedClientProvider clientProvider) {
+                                       ClientRegistration clientRegistration,
+                                       JwtBearerOAuth2AuthorizedClientProvider clientProvider) {
         ClientRegistrationRepository registrationRepository = new InMemoryClientRegistrationRepository(clientRegistration);
         OAuth2AuthorizedClientService authorizedClientService = new InMemoryOAuth2AuthorizedClientService(registrationRepository);
         AuthorizedClientServiceOAuth2AuthorizedClientManager clientManager
@@ -43,13 +43,14 @@ public class ProxyConfiguration {
                 = new ServletOAuth2AuthorizedClientExchangeFilterFunction(clientManager);
         filter.setDefaultClientRegistrationId(properties.getOidc().getRegistrationId());
         filter.setDefaultOAuth2AuthorizedClient(true);
+
         return WebClient.builder()
                 .apply(filter.oauth2Configuration())
                 .baseUrl(properties.getEndpointURL().toString())
                 .build();
     }
 
-    @Bean(name = "MaskinportenWebClient")
+    @Bean(name = "OidcProviderWebClient")
     WebClient maskinportenWebClient(ClientConfigurationProperties properties) {
         return WebClient.builder()
                 .baseUrl(properties.getOidc().getUrl().toString())

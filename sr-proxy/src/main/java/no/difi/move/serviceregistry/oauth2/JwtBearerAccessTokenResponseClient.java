@@ -17,9 +17,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
+import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.security.cert.CertificateEncodingException;
@@ -34,10 +37,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class JwtBearerAccessTokenResponseClient implements OAuth2AccessTokenResponseClient<JwtBearerGrantRequest> {
 
+    private static final String INVALID_TOKEN_RESPONSE_ERROR_CODE = "invalid_token_response";
     private static final long EXPIRES_IN_SECONDS = 299;
 
     private final ClientConfigurationProperties properties;
-    @Qualifier("MaskinportenWebClient")
+    @Qualifier("OidcProviderWebClient")
     private final WebClient webClient;
     private final KeystoreAccessor keystoreAccessor;
     private final JWSSigner jwsSigner;
@@ -48,7 +52,7 @@ public class JwtBearerAccessTokenResponseClient implements OAuth2AccessTokenResp
         return OAuth2AccessTokenResponse.withToken(tokenResponse.getAccessToken())
                 .tokenType(OAuth2AccessToken.TokenType.BEARER)
                 .expiresIn(EXPIRES_IN_SECONDS)
-                .scopes(Sets.newHashSet(properties.getOidc().getScopes()))
+                .scopes(Sets.newHashSet(properties.getOidc().getScopes().split(",")))
                 .build();
     }
 
@@ -61,7 +65,7 @@ public class JwtBearerAccessTokenResponseClient implements OAuth2AccessTokenResp
             JWTClaimsSet claims = new JWTClaimsSet.Builder()
                     .audience(properties.getOidc().getAudience())
                     .issuer(properties.getOidc().getClientId())
-                    .claim("scope", Lists.newArrayList(properties.getOidc().getScopes().split(",")))
+                    .claim("scope", StringUtils.replace(properties.getOidc().getScopes(), ",", " "))
                     .jwtID(UUID.randomUUID().toString())
                     .issueTime(Date.from(ZonedDateTime.now(ZoneOffset.UTC).toInstant()))
                     .expirationTime(Date.from(ZonedDateTime.now(ZoneOffset.UTC).toInstant().plusSeconds(120)))
@@ -86,7 +90,11 @@ public class JwtBearerAccessTokenResponseClient implements OAuth2AccessTokenResp
                 .bodyValue(requestParameters)
                 .retrieve()
                 .bodyToMono(OidcTokenResponse.class)
+                .onErrorMap((Throwable error) -> {
+                    OAuth2Error oauth2Error = new OAuth2Error(INVALID_TOKEN_RESPONSE_ERROR_CODE,
+                            "An error occurred while attempting to retrieve the OAuth 2.0 Access Token Response: " + error.getMessage(), null);
+                    throw new OAuth2AuthorizationException(oauth2Error);
+                })
                 .block();
     }
-
 }

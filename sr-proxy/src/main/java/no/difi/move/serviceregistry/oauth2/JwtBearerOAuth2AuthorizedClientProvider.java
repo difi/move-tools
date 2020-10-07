@@ -3,6 +3,7 @@ package no.difi.move.serviceregistry.oauth2;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.Nullable;
 import org.springframework.security.oauth2.client.OAuth2AuthorizationContext;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProvider;
@@ -15,7 +16,6 @@ import org.springframework.util.Assert;
 
 import java.time.Clock;
 import java.time.Duration;
-import java.time.Instant;
 
 @Slf4j
 @Setter
@@ -28,7 +28,10 @@ public class JwtBearerOAuth2AuthorizedClientProvider implements OAuth2Authorized
     private Clock clock = Clock.systemUTC();
 
     @Override
+    @Nullable
     public OAuth2AuthorizedClient authorize(OAuth2AuthorizationContext context) {
+        Assert.notNull(context, "context cannot be null");
+
         log.debug("Attempts to authorize client assuming JWT bearer token grant type");
         Assert.notNull(context, "context cannot be null");
 
