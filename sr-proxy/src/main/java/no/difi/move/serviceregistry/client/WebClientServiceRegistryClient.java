@@ -2,8 +2,9 @@ package no.difi.move.serviceregistry.client;
 
 import com.nimbusds.jose.proc.BadJWSException;
 import lombok.RequiredArgsConstructor;
-import no.difi.move.serviceregistry.oauth2.JwtDecoder;
 import no.difi.move.serviceregistry.config.ClientConfigurationProperties;
+import no.difi.move.serviceregistry.oauth2.JwtDecoder;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -14,7 +15,10 @@ import java.time.Duration;
 public class WebClientServiceRegistryClient implements ServiceRegistryClient {
 
     private static final int BLOCK_DURATION_IN_SECONDS = 30;
+
+    @Qualifier("ServiceRegistryWebClient")
     private final WebClient webClient;
+
     private final ClientConfigurationProperties properties;
 
     @Override

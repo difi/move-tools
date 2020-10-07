@@ -6,7 +6,6 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSSigner;
-import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.util.Base64;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
@@ -14,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.difi.move.serviceregistry.config.ClientConfigurationProperties;
 import no.difi.move.serviceregistry.keystore.KeystoreAccessor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
@@ -35,7 +35,12 @@ import java.util.UUID;
 public class JwtBearerAccessTokenResponseClient implements OAuth2AccessTokenResponseClient<JwtBearerGrantRequest> {
 
     private static final long EXPIRES_IN_SECONDS = 299;
+
     private final ClientConfigurationProperties properties;
+    @Qualifier("MaskinportenWebClient")
+    private final WebClient webClient;
+    private final KeystoreAccessor keystoreAccessor;
+    private final JWSSigner jwsSigner;
 
     @Override
     public OAuth2AccessTokenResponse getTokenResponse(JwtBearerGrantRequest authorizationGrantRequest) {
@@ -49,8 +54,7 @@ public class JwtBearerAccessTokenResponseClient implements OAuth2AccessTokenResp
 
     private String makeJwt() {
         try {
-            KeystoreAccessor accessor = new KeystoreAccessor(properties.getOidc().getKeystore());
-            List<Base64> certificateChain = Lists.newArrayList(Base64.encode(accessor.getX509Certificate().getEncoded()));
+            List<Base64> certificateChain = Lists.newArrayList(Base64.encode(keystoreAccessor.getX509Certificate().getEncoded()));
             JWSHeader jwtHeader = new JWSHeader.Builder(JWSAlgorithm.RS256)
                     .x509CertChain(certificateChain)
                     .build();
@@ -62,9 +66,8 @@ public class JwtBearerAccessTokenResponseClient implements OAuth2AccessTokenResp
                     .issueTime(Date.from(ZonedDateTime.now(ZoneOffset.UTC).toInstant()))
                     .expirationTime(Date.from(ZonedDateTime.now(ZoneOffset.UTC).toInstant().plusSeconds(120)))
                     .build();
-            JWSSigner signer = new RSASSASigner(accessor.getKeyPair().getPrivate());
             SignedJWT signedJWT = new SignedJWT(jwtHeader, claims);
-            signedJWT.sign(signer);
+            signedJWT.sign(jwsSigner);
             return signedJWT.serialize();
         } catch (CertificateEncodingException e) {
             throw new IllegalStateException("Could not get encoded certificate", e);
@@ -74,9 +77,6 @@ public class JwtBearerAccessTokenResponseClient implements OAuth2AccessTokenResp
     }
 
     private OidcTokenResponse fetchToken(String jwt) {
-        WebClient webClient = WebClient.builder()
-                .baseUrl(properties.getOidc().getUrl().toString())
-                .build();
         LinkedMultiValueMap<String, String> requestParameters = new LinkedMultiValueMap<>();
         requestParameters.add("grant_type", JwtBearerGrantRequest.JWT_BEARER_GRANT_TYPE.getValue());
         requestParameters.add("assertion", jwt);

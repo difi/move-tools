@@ -1,5 +1,8 @@
 package no.difi.move.serviceregistry.config;
 
+import com.nimbusds.jose.JWSSigner;
+import com.nimbusds.jose.crypto.RSASSASigner;
+import no.difi.move.serviceregistry.keystore.KeystoreAccessor;
 import no.difi.move.serviceregistry.oauth2.JwtBearerGrantRequest;
 import no.difi.move.serviceregistry.oauth2.JwtBearerOAuth2AuthorizedClientProvider;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -23,8 +26,8 @@ public class ProxyConfiguration {
                 .build();
     }
 
-    @Bean
-    WebClient webClient(ClientConfigurationProperties properties,
+    @Bean(name = "ServiceRegistryWebClient")
+    WebClient serviceRegistryWebClient(ClientConfigurationProperties properties,
                         ClientRegistration clientRegistration,
                         JwtBearerOAuth2AuthorizedClientProvider clientProvider) {
         ClientRegistrationRepository registrationRepository = new InMemoryClientRegistrationRepository(clientRegistration);
@@ -44,6 +47,23 @@ public class ProxyConfiguration {
                 .apply(filter.oauth2Configuration())
                 .baseUrl(properties.getEndpointURL().toString())
                 .build();
+    }
+
+    @Bean(name = "MaskinportenWebClient")
+    WebClient maskinportenWebClient(ClientConfigurationProperties properties) {
+        return WebClient.builder()
+                .baseUrl(properties.getOidc().getUrl().toString())
+                .build();
+    }
+
+    @Bean
+    KeystoreAccessor keystoreAccessor(ClientConfigurationProperties properties) {
+        return new KeystoreAccessor(properties.getOidc().getKeystore());
+    }
+
+    @Bean
+    JWSSigner jwsSigner(KeystoreAccessor accessor) {
+        return new RSASSASigner(accessor.getKeyPair().getPrivate());
     }
 
 }
