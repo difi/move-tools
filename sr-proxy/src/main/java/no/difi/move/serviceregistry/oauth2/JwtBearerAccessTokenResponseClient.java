@@ -21,6 +21,7 @@ import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -32,7 +33,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtBearerAccessTokenResponseClient implements OAuth2AccessTokenResponseClient<JwtBearerGrantRequest> {
@@ -48,6 +48,7 @@ public class JwtBearerAccessTokenResponseClient implements OAuth2AccessTokenResp
 
     @Override
     public OAuth2AccessTokenResponse getTokenResponse(JwtBearerGrantRequest authorizationGrantRequest) {
+        Assert.notNull(authorizationGrantRequest, "authorizationGrantRequest cannot be null");
         OidcTokenResponse tokenResponse = fetchToken(makeJwt());
         return OAuth2AccessTokenResponse.withToken(tokenResponse.getAccessToken())
                 .tokenType(OAuth2AccessToken.TokenType.BEARER)
