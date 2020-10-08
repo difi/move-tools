@@ -14,8 +14,10 @@
     </modules>
 
     <scm>
-        <connection>scm:git:git@git.difi.local:move-environment</connection>
-        <developerConnection>scm:git:git@git.difi.local:move-environment</developerConnection>
+        <connection>scm:git:https://github.com/difi/move-tools</connection>
+        <developerConnection>scm:git:https://github.com/difi/move-tools</developerConnection>
+        <url>https://github.com/difi/move-tools</url>
+        <tag>HEAD</tag>
     </scm>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
