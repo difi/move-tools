@@ -13,3 +13,6 @@
 npm-debug.log
 node_modules
 
+### Local properties
+/**/*-local.properties
+
