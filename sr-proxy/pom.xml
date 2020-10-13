@@ -70,6 +70,11 @@
             <version>${guava.version}</version>
         </dependency>
         <dependency>
+            <groupId>no.difi.move-common</groupId>
+            <artifactId>security</artifactId>
+            <version>1.1.5</version>
+        </dependency>
+        <dependency>
             <groupId>no.difi.commons</groupId>
             <artifactId>commons-asic</artifactId>
             <version>${commons.asic.version}</version>

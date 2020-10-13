@@ -66,5 +66,4 @@ public class ProxyConfiguration {
     JWSSigner jwsSigner(KeystoreAccessor accessor) {
         return new RSASSASigner(accessor.getKeyPair().getPrivate());
     }
-
 }

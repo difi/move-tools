@@ -2,12 +2,13 @@ package no.difi.move.serviceregistry.client;
 
 import com.nimbusds.jose.proc.BadJWSException;
 import lombok.RequiredArgsConstructor;
+import no.difi.move.common.oauth.JWTDecoder;
 import no.difi.move.serviceregistry.config.ClientConfigurationProperties;
-import no.difi.move.serviceregistry.oauth2.JwtDecoder;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.security.cert.CertificateException;
 import java.time.Duration;
 
 @Service
@@ -18,7 +19,6 @@ public class WebClientServiceRegistryClient implements ServiceRegistryClient {
 
     @Qualifier("ServiceRegistryWebClient")
     private final WebClient webClient;
-
     private final ClientConfigurationProperties properties;
 
     @Override
@@ -30,8 +30,9 @@ public class WebClientServiceRegistryClient implements ServiceRegistryClient {
                     .retrieve()
                     .bodyToMono(String.class)
                     .block(Duration.ofSeconds(BLOCK_DURATION_IN_SECONDS));
-            return JwtDecoder.getPayload(response, properties.getOidc().getJwkUrl());
-        } catch (BadJWSException e) {
+            JWTDecoder jwtDecoder = new JWTDecoder();
+            return jwtDecoder.getPayload(response, properties.getOidc().getJwkUrl());
+        } catch (BadJWSException | CertificateException e) {
             throw new IllegalStateException("JWT decoding failed", e);
         }
     }
