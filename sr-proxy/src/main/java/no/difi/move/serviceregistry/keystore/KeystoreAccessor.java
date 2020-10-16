@@ -1,7 +1,8 @@
-package no.difi.move.serviceregistry.auth;
+package no.difi.move.serviceregistry.keystore;
 
 import no.difi.asic.SignatureHelper;
 import no.difi.move.serviceregistry.config.KeyStoreProperties;
+import no.difi.move.serviceregistry.keystore.KeystoreProvider;
 
 import java.security.*;
 import java.security.cert.X509Certificate;
@@ -18,6 +19,7 @@ public class KeystoreAccessor {
     public KeystoreAccessor(KeyStoreProperties properties) {
         this.properties = Objects.requireNonNull(properties);
         this.keyStore = KeystoreProvider.loadKeyStore(properties);
+        loadPrivateKey();
     }
 
     /**
@@ -37,7 +39,7 @@ public class KeystoreAccessor {
         }
     }
 
-    X509Certificate getX509Certificate() {
+    public X509Certificate getX509Certificate() {
         try {
             if (!keyStore.containsAlias(properties.getAlias())) {
                 throw new IllegalStateException(String.format("No Certificate with alias \"%s\" found in the KeyStore", properties.getAlias()));

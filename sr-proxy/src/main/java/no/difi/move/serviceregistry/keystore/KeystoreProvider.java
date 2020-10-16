@@ -1,5 +1,6 @@
-package no.difi.move.serviceregistry.auth;
+package no.difi.move.serviceregistry.keystore;
 
+import lombok.RequiredArgsConstructor;
 import no.difi.move.serviceregistry.config.KeyStoreProperties;
 import org.springframework.core.io.Resource;
 
@@ -9,18 +10,10 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
+@RequiredArgsConstructor
 public class KeystoreProvider {
 
     private final KeyStore keystore;
-
-    private KeystoreProvider(KeyStore keyStore) {
-        this.keystore = keyStore;
-    }
-
-    public static KeystoreProvider from(KeyStoreProperties properties) {
-        final KeyStore keyStore = loadKeyStore(properties);
-        return new KeystoreProvider(keyStore);
-    }
 
     static KeyStore loadKeyStore(KeyStoreProperties properties) {
         String type = properties.getType();
@@ -46,7 +39,4 @@ public class KeystoreProvider {
         }
     }
 
-    public KeyStore getKeyStore() {
-        return keystore;
-    }
 }
